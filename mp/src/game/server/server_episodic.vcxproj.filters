@@ -3163,6 +3163,9 @@
     <ClCompile Include="hl2\npc_launcher.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
+    <ClCompile Include="lab\npc_lost_soul.cpp">
+      <Filter>Source Files\HL2 DLL</Filter>
+    </ClCompile>
     <ClCompile Include="episodic\npc_magnusson.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
@@ -3191,6 +3194,9 @@
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
     <ClCompile Include="hl2\npc_scanner.cpp">
+      <Filter>Source Files\HL2 DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="lab\npc_shadow_walker.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
     <ClCompile Include="hl2\npc_stalker.cpp">
