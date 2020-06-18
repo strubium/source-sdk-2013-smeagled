@@ -173,6 +173,8 @@ public:
 
 	virtual bool InRoundRestart( void ) { return false; }
 
+	virtual void RegisterScriptFunctions( void ){ };
+
 	//Allow thirdperson camera.
 	virtual bool AllowThirdPersonCamera( void ) { return false; }
 
@@ -233,7 +235,11 @@ public:
 
 	virtual bool IsSkillLevel( int iLevel ) { return GetSkillLevel() == iLevel; }
 	virtual int	GetSkillLevel() { return g_iSkillLevel; }
+#ifdef MAPBASE
+	virtual void OnSkillLevelChanged( int iNewLevel );
+#else
 	virtual void OnSkillLevelChanged( int iNewLevel ) {};
+#endif
 	virtual void SetSkillLevel( int iLevel )
 	{
 		int oldLevel = g_iSkillLevel; 

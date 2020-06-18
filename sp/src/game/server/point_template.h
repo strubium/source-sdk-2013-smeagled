@@ -20,6 +20,10 @@ struct template_t
 	DECLARE_SIMPLE_DATADESC();
 };
 
+void ScriptInstallPreSpawnHook();
+bool ScriptPreInstanceSpawn( CScriptScope *pScriptScope, CBaseEntity *pChild, string_t iszKeyValueData );
+void ScriptPostSpawn( CScriptScope *pScriptScope, CBaseEntity **ppEntities, int nEntities );
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -49,9 +53,16 @@ public:
 
 	// Template instancing
 	bool			CreateInstance( const Vector &vecOrigin, const QAngle &vecAngles, CUtlVector<CBaseEntity*> *pEntities );
+#ifdef MAPBASE
+	bool			CreateSpecificInstance( int iTemplate, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity **pOutEntity );
+#endif
+	void			CreationComplete(const CUtlVector<CBaseEntity*>& entities);
 
 	// Inputs
 	void			InputForceSpawn( inputdata_t &inputdata );
+#ifdef MAPBASE
+	void			InputForceSpawnRandomTemplate( inputdata_t &inputdata );
+#endif
 
 	virtual void	PerformPrecache();
 
@@ -67,6 +78,9 @@ private:
 	CUtlVector< template_t >		m_hTemplates;
 
 	COutputEvent					m_pOutputOnSpawned;
+#ifdef MAPBASE
+	COutputEHANDLE					m_pOutputOutEntity;
+#endif
 };
 
 #endif // POINT_TEMPLATE_H

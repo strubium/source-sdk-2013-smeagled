@@ -19,6 +19,15 @@
     <Filter Include="Source Files\HL2 DLL\unused">
       <UniqueIdentifier>{A52C827A-EB95-73A5-F031-C0395B5E2677}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\HL2MP">
+      <UniqueIdentifier>{2BA678C8-595F-A004-FD96-60E33CA8DE83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\HL2MP\Weapons">
+      <UniqueIdentifier>{382A0C79-1859-D554-1EB7-DCBE8F115956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mapbase">
+      <UniqueIdentifier>{96AE379F-B108-4424-9880-320ED1E65A8D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Precompiled Header">
       <UniqueIdentifier>{A7D26A13-21F4-C6B5-5922-8A4FB05AF07D}</UniqueIdentifier>
     </Filter>
@@ -64,6 +73,9 @@
       <Filter>Link Libraries</Filter>
     </Library>
     <Library Include="..\..\lib\public\tier3.lib">
+      <Filter>Link Libraries</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\vscript.lib">
       <Filter>Link Libraries</Filter>
     </Library>
     <Library Include="..\..\lib\public\vstdlib.lib">
@@ -1061,6 +1073,9 @@
     <ClInclude Include="env_player_surface_trigger.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="env_projectedtexture.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\game\shared\env_wind_shared.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -1499,6 +1514,12 @@
     <ClInclude Include="..\..\game\server\vote_controller.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="vscript_server.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\vscript_shared.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="waterbullet.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -1610,13 +1631,7 @@
     <ClInclude Include="hl2\grenade_frag.h">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClInclude>
-    <ClInclude Include="lab\grenade_satchel.h">
-      <Filter>Source Files\HL2 DLL</Filter>
-    </ClInclude>
     <ClInclude Include="hl2\grenade_spit.h">
-      <Filter>Source Files\HL2 DLL</Filter>
-    </ClInclude>
-    <ClInclude Include="lab\grenade_tripmine.h">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClInclude>
     <ClInclude Include="..\..\game\shared\hl2\hl2_gamerules.h">
@@ -1760,13 +1775,10 @@
     <ClInclude Include="hl2\weapon_rpg.h">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\lab\weapon_slam.h">
-      <Filter>Source Files\HL2 DLL</Filter>
-    </ClInclude>
     <ClInclude Include="episodic\weapon_striderbuster.h">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClInclude>
-    <ClInclude Include="hl2\weapon_stunstick.h">
+    <ClInclude Include="..\..\game\shared\hl2mp\weapon_stunstick.h">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClInclude>
     <ClInclude Include="hl2\grenade_beam.h">
@@ -1780,6 +1792,39 @@
     </ClInclude>
     <ClInclude Include="hl2\weapon_flaregun.h">
       <Filter>Source Files\HL2 DLL\unused</Filter>
+    </ClInclude>
+    <ClInclude Include="hl2mp\grenade_satchel.h">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="hl2mp\grenade_tripmine.h">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\hl2mp\weapon_slam.h">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="mapbase\ai_grenade.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="mapbase\datadesc_mod.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="mapbase\expandedrs_combine.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="mapbase\GlobalStrings.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\mapbase\MapEdit.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\mapbase\matchers.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="mapbase\SystemConvarMod.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="mapbase\variant_tools.h">
+      <Filter>Source Files\Mapbase</Filter>
     </ClInclude>
     <ClInclude Include="plasma.h">
       <Filter>Source Files\temporary entities</Filter>
@@ -2206,6 +2251,9 @@
     <ClCompile Include="env_entity_maker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="env_global_light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="env_particlescript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2455,6 +2503,9 @@
     <ClCompile Include="logic_navigation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="logic_random_outputs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="logicauto.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2614,6 +2665,9 @@
     <ClCompile Include="point_devshot_camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="point_entity_finder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="point_playermoveconstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2738,6 +2792,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\game\shared\singleplay_gamerules.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skyboxswapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SkyCamera.cpp">
@@ -2879,6 +2936,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\game\server\vote_controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vscript_server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\vscript_shared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="waterbullet.cpp">
@@ -3025,13 +3088,7 @@
     <ClCompile Include="hl2\grenade_frag.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
-    <ClCompile Include="lab\grenade_satchel.cpp">
-      <Filter>Source Files\HL2 DLL</Filter>
-    </ClCompile>
     <ClCompile Include="hl2\grenade_spit.cpp">
-      <Filter>Source Files\HL2 DLL</Filter>
-    </ClCompile>
-    <ClCompile Include="lab\grenade_tripmine.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\game\shared\lab\handviewmodel_shared.cpp">
@@ -3349,16 +3406,13 @@
     <ClCompile Include="hl2\weapon_shotgun.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\lab\weapon_slam.cpp">
-      <Filter>Source Files\HL2 DLL</Filter>
-    </ClCompile>
     <ClCompile Include="hl2\weapon_smg1.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
     <ClCompile Include="episodic\weapon_striderbuster.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
-    <ClCompile Include="hl2\weapon_stunstick.cpp">
+    <ClCompile Include="..\..\game\shared\hl2mp\weapon_stunstick.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
     <ClCompile Include="hl2\grenade_beam.cpp">
@@ -3381,6 +3435,93 @@
     </ClCompile>
     <ClCompile Include="hl2\weapon_flaregun.cpp">
       <Filter>Source Files\HL2 DLL\unused</Filter>
+    </ClCompile>
+    <ClCompile Include="hl2mp\grenade_satchel.cpp">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="hl2mp\grenade_tripmine.cpp">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\hl2mp\weapon_slam.cpp">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\ai_grenade.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\ai_monitor.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\ai_weaponmodifier.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\closecaption_entity.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\datadesc_mod.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\func_clientclip.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\GlobalStrings.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\logic_eventlistener.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\logic_externaldata.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\logic_register_activator.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\logic_skill.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\mapbase_game_log.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\mapbase_rpc.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\mapbase_shared.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\MapEdit.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\matchers.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\point_advanced_finder.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\point_copy_size.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\point_damageinfo.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\point_entity_replace.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\point_projectile.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\point_radiation_source.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\SystemConvarMod.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\vscript_funcs_hl2.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\vscript_funcs_math.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\vscript_funcs_shared.cpp">
+      <Filter>Source Files\Mapbase</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files\Precompiled Header</Filter>
@@ -3562,6 +3703,9 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <None Include="vscript_server.nut">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="..\..\vpc_scripts\loadaddress.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
@@ -3575,6 +3719,9 @@
       <Filter>VPC Scripts</Filter>
     </None>
     <None Include="..\..\game\server\server_base.vpc">
+      <Filter>VPC Scripts</Filter>
+    </None>
+    <None Include="..\..\game\server\server_mapbase.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
     <None Include="..\..\vpc_scripts\source_base.vpc">
