@@ -95,6 +95,7 @@ public:
 	DECLARE_CLIENTCLASS();
 	DECLARE_PREDICTABLE();
 	DECLARE_INTERPOLATION();
+	DECLARE_ENT_SCRIPTDESC();
 
 	enum
 	{
@@ -445,6 +446,10 @@ public:
 
 	virtual bool					IsViewModel() const;
 
+#ifdef MAPBASE_VSCRIPT
+	float							ScriptGetPoseParameter(const char* szName);
+#endif
+	void							ScriptSetPoseParameter(const char* szName, float fValue);
 protected:
 	// View models scale their attachment positions to account for FOV. To get the unmodified
 	// attachment position (like if you're rendering something else during the view model's DrawModel call),

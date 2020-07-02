@@ -31,6 +31,15 @@
     <Filter Include="Source Files\HL2 DLL">
       <UniqueIdentifier>{3C43D38A-46AF-2183-A5E5-44383B1D2652}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\HL2MP">
+      <UniqueIdentifier>{2BA678C8-595F-A004-FD96-60E33CA8DE83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\HL2MP\Weapons">
+      <UniqueIdentifier>{382A0C79-1859-D554-1EB7-DCBE8F115956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mapbase">
+      <UniqueIdentifier>{96AE379F-B108-4424-9880-320ED1E65A8D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Precompiled Header">
       <UniqueIdentifier>{A7D26A13-21F4-C6B5-5922-8A4FB05AF07D}</UniqueIdentifier>
     </Filter>
@@ -94,6 +103,9 @@
       <Filter>Link Libraries</Filter>
     </Library>
     <Library Include="..\..\lib\public\vgui_controls.lib">
+      <Filter>Link Libraries</Filter>
+    </Library>
+    <Library Include="..\..\lib\public\vscript.lib">
       <Filter>Link Libraries</Filter>
     </Library>
     <Library Include="..\..\lib\public\vstdlib.lib">
@@ -1820,6 +1832,15 @@
     <ClInclude Include="viewpostprocess.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="vscript_client.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\vscript_shared.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="worldlight.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="game_controls\basemodel_panel.h">
       <Filter>Source Files\game_controls</Filter>
     </ClInclude>
@@ -1880,8 +1901,17 @@
     <ClInclude Include="..\..\game\shared\episodic\npc_advisor_shared.h">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\lab\weapon_slam.h">
+    <ClInclude Include="..\..\game\shared\hl2mp\weapon_stunstick.h">
       <Filter>Source Files\HL2 DLL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\hl2mp\weapon_slam.h">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\mapbase\MapEdit.h">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\mapbase\matchers.h">
+      <Filter>Source Files\Mapbase</Filter>
     </ClInclude>
     <ClInclude Include="sixense\in_sixense.h">
       <Filter>Source Files\Sixense</Filter>
@@ -2051,6 +2081,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="c_env_fog_controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="c_env_global_light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="c_env_particlescript.cpp">
@@ -2914,6 +2947,12 @@
     <ClCompile Include="..\..\game\shared\voice_status.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vscript_client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\vscript_shared.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="warp_overlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2933,6 +2972,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WorldDimsProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="worldlight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="game_controls\basemodel_panel.cpp">
@@ -3106,9 +3148,6 @@
     <ClCompile Include="hl2\c_weapon_physcannon.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
-    <ClCompile Include="hl2\c_weapon_stunstick.cpp">
-      <Filter>Source Files\HL2 DLL</Filter>
-    </ClCompile>
     <ClCompile Include="hl2\clientmode_hlnormal.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
@@ -3223,8 +3262,38 @@
     <ClCompile Include="hl2\vgui_rootpanel_hl2.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\lab\weapon_slam.cpp">
+    <ClCompile Include="..\..\game\shared\hl2mp\weapon_stunstick.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\hl2mp\weapon_slam.cpp">
+      <Filter>Source Files\HL2MP\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="mapbase\c_func_clientclip.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\mapbase_game_log.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\mapbase_rpc.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\mapbase_shared.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\MapEdit.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\matchers.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\vscript_funcs_hl2.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\vscript_funcs_math.cpp">
+      <Filter>Source Files\Mapbase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\mapbase\vscript_funcs_shared.cpp">
+      <Filter>Source Files\Mapbase</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files\Precompiled Header</Filter>
@@ -3448,7 +3517,13 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <None Include="vscript_client.nut">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="..\..\game\client\client_base.vpc">
+      <Filter>VPC Scripts</Filter>
+    </None>
+    <None Include="..\..\game\client\client_mapbase.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
     <None Include="..\..\vpc_scripts\loadaddress.vpc">
