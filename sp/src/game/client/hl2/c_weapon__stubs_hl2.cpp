@@ -44,19 +44,4 @@ STUB_WEAPON_CLASS( weapon_oldmanharpoon, WeaponOldManHarpoon, C_WeaponCitizenPac
 #endif
 #endif
 
-#ifdef CSS_WEAPONS_IN_HL2 
-STUB_WEAPON_CLASS( weapon_css_glock, Weapon_CSS_HL2_Glock18, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_usp, Weapon_CSS_HL2_USP, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_p228, Weapon_CSS_HL2_P228, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_deagle, Weapon_CSS_HL2_Deagle, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_fiveseven, Weapon_CSS_HL2_FiveSeveN, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_elite, Weapon_CSS_HL2_DualBerettas, C_BaseHLCombatWeapon );
-
-STUB_WEAPON_CLASS( weapon_css_tmp, Weapon_CSS_HL2_TMP, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_mp5navy, Weapon_CSS_HL2_MP5Navy, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_ump45, Weapon_CSS_HL2_UMP45, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_p90, Weapon_CSS_HL2_P90, C_BaseHLCombatWeapon );
-STUB_WEAPON_CLASS( weapon_css_mac10, Weapon_CSS_HL2_MAC10, C_BaseHLCombatWeapon );
-#endif
-
 
