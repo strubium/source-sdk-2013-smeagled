@@ -290,6 +290,7 @@ public:
 		}
 	}
 
+#ifdef CLIENT_DLL
 	int GetWorldModelIndex( void )
 	{
 		if (this->IsSilenced())
@@ -301,6 +302,7 @@ public:
 			return BaseClass::GetWorldModelIndex();
 		}
 	}
+#endif
 
 	void InputSetSilencer( inputdata_t &inputdata )
 	{

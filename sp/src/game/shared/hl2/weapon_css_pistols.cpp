@@ -477,22 +477,41 @@ public:
 	}
 
 #if MAPBASE_VER_INT < 7000
-	void Activate()
+#ifndef CLIENT_DLL
+	// HACKHACK: The dropped model needs to be set as the main model when the weapon drops (and when it spawns), so use this unsaved boolean
+	// with FallInit() to make it use the dropped model instead
+	bool m_bInFallInit;
+
+	void FallInit()
 	{
-		BaseClass::Activate();
+		m_bInFallInit = true;
+		BaseClass::FallInit();
+		m_bInFallInit = false;
+	}
+#endif
+
+	void Precache()
+	{
+		BaseClass::Precache();
 
 		m_iDroppedModelIndex = CBaseEntity::PrecacheModel( DUAL_BERETTAS_DROPPED_MODEL );
 	}
 
 	const char *GetWorldModel( void ) const
 	{
+#ifdef CLIENT_DLL
 		return GetOwner() == NULL ? DUAL_BERETTAS_DROPPED_MODEL : BaseClass::GetWorldModel();
+#else
+		return (GetOwner() == NULL || m_bInFallInit) ? DUAL_BERETTAS_DROPPED_MODEL : BaseClass::GetWorldModel();
+#endif
 	}
 
+#ifdef CLIENT_DLL
 	int GetWorldModelIndex( void )
 	{
 		return GetOwner() == NULL ? m_iDroppedModelIndex : BaseClass::GetWorldModelIndex();
 	}
+#endif
 #endif
 
 	virtual float GetFireRate( void ) { return 0.5f; }
