@@ -451,7 +451,7 @@ public:
 	void	PrimaryAttack();
 	Activity	GetPrimaryAttackActivity( void );
 
-	virtual float GetViewKickBase() { return 1.0f; }
+	virtual float GetViewKickBase() { return 0.5f; }
 
 	virtual float GetShotPenaltyTime() { return 0.2f; }
 
@@ -471,7 +471,7 @@ public:
 										1.0f ); 
 
 		// We lerp from very accurate to inaccurate over time
-		VectorLerp( VECTOR_CONE_2DEGREES, VECTOR_CONE_9DEGREES, ramp, cone );
+		VectorLerp( VECTOR_CONE_2DEGREES, VECTOR_CONE_7DEGREES, ramp, cone );
 
 		return cone;
 	}
