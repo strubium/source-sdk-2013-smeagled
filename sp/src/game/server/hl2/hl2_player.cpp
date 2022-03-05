@@ -482,7 +482,9 @@ void CC_ToggleDuck( void )
 static ConCommand toggle_duck("toggle_duck", CC_ToggleDuck, "Toggles duck" );
 
 #if !defined( HL2MP ) && !defined(PORTAL) && !defined(MAPLAB)
+#ifndef HL2_PLAYER_TALKER
 LINK_ENTITY_TO_CLASS( player, CHL2_Player );
+#endif
 #endif
 
 PRECACHE_REGISTER(player);
