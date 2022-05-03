@@ -1,5 +1,5 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
-// little fucking bastard
+//  Sonic dog
 //=============================================================================//
 #include "cbase.h"
 #include "ai_default.h"
