@@ -61,9 +61,6 @@ $Project "Server (Episodic)"
 			//$File	"$SRCDIR\game\shared\lab\weapon_slam.cpp" // Map Labs uses Mapbase SLAMs now (Blixibon)
 			//$File	"$SRCDIR\game\shared\lab\weapon_slam.h"
 			$File   "lab\weapon_custom_melee.h"
-			$File   "lab\npc_lost_soul.cpp"
-			$File   "lab\npc_shadow_walker.h"
-			$File   "lab\npc_shadow_walker.cpp"
 			//$File   "lab\grenade_satchel.cpp"
 			//$File   "lab\grenade_satchel.h"
 			//$File   "lab\grenade_tripmine.cpp"
@@ -325,6 +322,13 @@ $Project "Server (Episodic)"
 				$File	"$SRCDIR\game\shared\hl2\weapon_css_shotguns.cpp"
 				$File	"$SRCDIR\game\shared\hl2\weapon_css_smgs.cpp"
 				$File	"$SRCDIR\game\shared\hl2\weapon_css_misc.cpp"
+			}
+			$Folder "Map Labs Template"
+			{
+				$File   "lab\npc_lost_soul.cpp"
+				$File   "lab\npc_shadow_walker.h"
+				$File   "lab\npc_shadow_walker.cpp"
+				$File	"lab\npc_houndeye.cpp"
 			}
 		}
 	}

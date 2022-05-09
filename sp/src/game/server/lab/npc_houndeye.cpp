@@ -51,6 +51,7 @@ enum
 	SCHED_HOUND_INVESTIGATE_SOUND,
 	SCHED_HOUND_INVESTIGATE_SCENT,
 	SCHED_HOUNDEYE_TAKE_COVER_FROM_ENEMY,
+	SCHED_HOUND_HOP_RETREAT,
 };
 
 //=========================================================
