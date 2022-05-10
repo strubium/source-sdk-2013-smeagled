@@ -1,5 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
-//  Sonic dog
+//							Sonic dog
+//  
 //=============================================================================//
 #include "cbase.h"
 #include "ai_default.h"
@@ -32,6 +33,9 @@ int		HOUND_AE_THUMP;
 int		HOUND_AE_FOOTSTEP;
 
 int g_interactionHoundeyeSquadNewEnemy;
+int	g_interactionHoundeyeGroupAttack = 0;
+int	g_interactionHoundeyeGroupRetreat = 0;
+int	g_interactionHoundeyeGroupRalley = 0;
 
 int s_iSonicEffectTexture = -1;
 
@@ -48,10 +52,15 @@ enum
 	SCHED_HOUNDEYE_RANGEATTACK1 = LAST_SHARED_SCHEDULE,
 	SCHED_HOUNDEYE_CHASE_ENEMY,
 	SCHED_HOUNDEYE_WANDER,
+
 	SCHED_HOUND_INVESTIGATE_SOUND,
 	SCHED_HOUND_INVESTIGATE_SCENT,
+
 	SCHED_HOUNDEYE_TAKE_COVER_FROM_ENEMY,
-	SCHED_HOUND_HOP_RETREAT,
+
+	SCHED_HOUNDEYE_GROUP_ATTACK,
+	SCHED_HOUNDEYE_GROUP_RETREAT,
+	SCHED_HOUNDEYE_GROUP_RALLEY
 };
 
 //=========================================================
@@ -70,6 +79,9 @@ enum
 {
 	COND_HOUNDEYECONDITION = LAST_SHARED_CONDITION,
 	COND_HOUNDEYE_SQUADMATE_FOUND_ENEMY,
+	COND_HOUNDEYE_GROUP_ATTACK = LAST_SHARED_CONDITION,
+	COND_HOUNDEYE_GROUP_RETREAT,
+	COND_HOUNDEYE_GROUP_RALLEY,
 };
 
 
@@ -91,13 +103,18 @@ public:
 	virtual void DeathSound(const CTakeDamageInfo& info);
 	virtual void IdleSound();
 	virtual void AlertSound();
+	virtual void HuntSound();
 
 	int OnTakeDamage_Alive(const CTakeDamageInfo& inputInfo);
 
 	void SonicAttack(void);
+	bool IsAnyoneInSquadAttacking(void);
+
+	void Event_Killed(const CTakeDamageInfo &info);
 
 	float	MaxYawSpeed(void);
 	int		RangeAttack1Conditions(float flDot, float flDist);
+
 	int		SelectSchedule(void);
 	virtual	void	GatherConditions(void);
 	bool			IsValidCover(const Vector &vecCoverLocation, CAI_Hint const *pHint);
@@ -141,6 +158,7 @@ void CHoundeye::Precache(void)
 	PrecacheScriptSound("NPC_Houndeye.Idle");
 	PrecacheScriptSound("NPC_Houndeye.Sonic");
 	PrecacheScriptSound("NPC_Houndeye.Alert");
+	PrecacheScriptSound("NPC_Houndeye.Hunt");
 	PrecacheScriptSound("NPC_Houndeye.Pain");
 	PrecacheScriptSound("NPC_Houndeye.Die");
 	s_iSonicEffectTexture = PrecacheModel("sprites/physbeam.vmt");
@@ -369,15 +387,42 @@ bool CHoundeye::IsJumpLegal(const Vector& startPos, const Vector& apex, const Ve
 	}
 	return false;
 }
+//------------------------------------------------------------------------------
+// Purpose : Broadcast retreat when member of squad killed
+// Input   :
+// Output  :
+//------------------------------------------------------------------------------
+void CHoundeye::Event_Killed(const CTakeDamageInfo &info)
+{
+	EmitSound("NPC_Houndeye.Retreat");
+	m_flSoundWaitTime = gpGlobals->curtime + 1.0;
+
+	if (m_pSquad)
+	{
+		m_pSquad->BroadcastInteraction(g_interactionHoundeyeGroupRetreat, NULL, this);
+	}
+
+	BaseClass::Event_Killed(info);
+}
 
 void CHoundeye::IdleSound()
 {
 	EmitSound("NPC_Houndeye.Idle");
 }
 
+void CHoundeye::HuntSound()
+{
+	EmitSound("NPC_Houndeye.Hunt");
+}
+
 
 void CHoundeye::AlertSound()
 {
+	// only first squad member makes ALERT sound.
+	if (m_pSquad && !m_pSquad->IsLeader(this))
+	{
+		return;
+	}
 	EmitSound("NPC_Houndeye.Alert");
 }
 
@@ -404,8 +449,33 @@ int CHoundeye::OnTakeDamage_Alive(const CTakeDamageInfo& inputInfo)
 	{
 		AddGesture(ACT_GESTURE_BIG_FLINCH);
 	}
+	//Occasionally broadcast retreat to squad
+	if (m_pSquad && random->RandomInt(0, 10) == 10)
+	{
+		EmitSound("NPC_Houndeye.Retreat");
+		m_flSoundWaitTime = gpGlobals->curtime + 1.0;
+
+		m_pSquad->BroadcastInteraction(g_interactionHoundeyeGroupRetreat, NULL, this);
+	}
 
 	return BaseClass::OnTakeDamage_Alive(inputInfo);
+}
+bool CHoundeye::IsAnyoneInSquadAttacking(void)
+{
+	if (!m_pSquad)
+	{
+		return false;
+	}
+	//Checks if anyone in our squad is attacking already
+	AISquadIter_t iter;
+	for (CAI_BaseNPC *pSquadMember = m_pSquad->GetFirstMember(&iter); pSquadMember; pSquadMember = m_pSquad->GetNextMember(&iter))
+	{
+		if (pSquadMember->IsCurSchedule(SCHED_HOUNDEYE_RANGEATTACK1))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 //=========================================================
@@ -467,6 +537,42 @@ int CHoundeye::SelectSchedule(void)
 	{
 	case NPC_STATE_COMBAT:
 	{
+		// dead enemy
+
+		if (HasCondition(COND_ENEMY_DEAD))
+		{
+			// call base class, all code to handle dead enemies is centralized there.
+			return BaseClass::SelectSchedule();
+		}
+
+		// If a group attack was requested attack even if attack conditions not met
+		if (HasCondition(COND_HOUNDEYE_GROUP_ATTACK))
+		{
+			// Check that I'm not standing in another hound eye 
+			// before attacking
+			trace_t tr;
+			AI_TraceHull(GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, 1),
+				GetHullMins(), GetHullMaxs(),
+				MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+			if (!tr.startsolid)
+			{
+				return SCHED_HOUNDEYE_GROUP_ATTACK;
+			}
+
+			// Otherwise attack as soon as I can
+			else
+			{
+				m_flNextAttack = gpGlobals->curtime;
+				SCHED_CHASE_ENEMY;
+			}
+		}
+
+		// If a group retread was requested 
+		if (HasCondition(COND_HOUNDEYE_GROUP_RETREAT))
+		{
+			return SCHED_HOUNDEYE_GROUP_RETREAT;
+		}
+
 		if (HasCondition(COND_LIGHT_DAMAGE))
 		{
 			if (random->RandomInt(0, 3) > 2)
@@ -494,6 +600,11 @@ int CHoundeye::SelectSchedule(void)
 			}
 
 		}
+		// If a group rally was requested 
+		if (HasCondition(COND_HOUNDEYE_GROUP_RALLEY))
+		{
+			return SCHED_HOUNDEYE_GROUP_RALLEY;
+		}
 
 		if (HasCondition(COND_CAN_RANGE_ATTACK1))
 		{
@@ -515,6 +626,23 @@ int CHoundeye::SelectSchedule(void)
 			return SCHED_HOUNDEYE_CHASE_ENEMY;
 
 		}
+		else
+		{
+			if (m_pSquad && random->RandomInt(0, 5) == 0)
+			{
+				if (!IsAnyoneInSquadAttacking())
+				{
+					EmitSound("NPC_Houndeye.Hunt");
+
+					m_flSoundWaitTime = gpGlobals->curtime + 1.0;
+
+					m_pSquad->BroadcastInteraction(g_interactionHoundeyeGroupRalley, NULL, this);
+					return SCHED_CHASE_ENEMY;
+				}
+			}
+			return SCHED_MOVE_AWAY;
+		}
+		break;
 	}
 	case NPC_STATE_IDLE:
 	{
@@ -522,6 +650,7 @@ int CHoundeye::SelectSchedule(void)
 		{
 			return SCHED_HOUNDEYE_WANDER;
 		}
+		break;
 	}
 
 	case NPC_STATE_ALERT:
@@ -532,8 +661,15 @@ int CHoundeye::SelectSchedule(void)
 		Assert(pSound != NULL);
 		if (pSound)
 		{
+			HuntSound();
 			return SCHED_HOUND_INVESTIGATE_SOUND;
 		}
+		if (HasCondition(COND_LIGHT_DAMAGE) ||
+			HasCondition(COND_HEAVY_DAMAGE))
+		{
+			return SCHED_TAKE_COVER_FROM_ORIGIN;
+		}
+		break;
 	}
 
 	}
@@ -631,6 +767,8 @@ AI_BEGIN_CUSTOM_NPC(npc_houndeye, CHoundeye)
 DECLARE_INTERACTION(g_interactionHoundeyeSquadNewEnemy);
 
 DECLARE_CONDITION(COND_HOUNDEYE_SQUADMATE_FOUND_ENEMY)
+DECLARE_CONDITION(COND_HOUNDEYE_GROUP_ATTACK)
+DECLARE_CONDITION(COND_HOUNDEYE_GROUP_RETREAT)
 
 DECLARE_ANIMEVENT(HOUND_AE_THUMP)
 DECLARE_ANIMEVENT(HOUND_AE_FOOTSTEP)
@@ -670,6 +808,8 @@ SCHED_HOUNDEYE_CHASE_ENEMY,
 "		COND_TASK_FAILED"
 "		COND_LOST_ENEMY"
 "		COND_HEAR_DANGER"
+"		COND_HOUNDEYE_GROUP_ATTACK"
+"		COND_HOUNDEYE_GROUP_RETREAT"
 )
 DEFINE_SCHEDULE
 (
@@ -698,6 +838,8 @@ SCHED_HOUNDEYE_WANDER,
 "		COND_CAN_RANGE_ATTACK1"
 "		COND_CAN_MELEE_ATTACK1"
 "		COND_TOO_CLOSE_TO_ATTACK"
+"		COND_HOUNDEYE_GROUP_ATTACK"
+"		COND_HOUNDEYE_GROUP_RETREAT"
 
 )
 DEFINE_SCHEDULE
@@ -721,6 +863,8 @@ SCHED_HOUND_INVESTIGATE_SOUND,
 "		COND_HEAR_DANGER"
 "		COND_CAN_RANGE_ATTACK1"
 "		COND_CAN_MELEE_ATTACK1"
+"		COND_HOUNDEYE_GROUP_ATTACK"
+"		COND_HOUNDEYE_GROUP_RETREAT"
 )
 DEFINE_SCHEDULE
 (
@@ -743,4 +887,59 @@ SCHED_HOUNDEYE_TAKE_COVER_FROM_ENEMY,
 "		COND_NEW_ENEMY"
 "		COND_HEAR_DANGER"
 )
+DEFINE_SCHEDULE
+(
+SCHED_HOUNDEYE_GROUP_RALLEY,
+
+"	Tasks"
+"		TASK_SET_TOLERANCE_DISTANCE		30"
+"		TASK_SET_FAIL_SCHEDULE			SCHEDULE:SCHED_CHASE_ENEMY"
+"		TASK_GET_PATH_TO_TARGET			0"
+"		TASK_RUN_PATH					0"
+"		TASK_WAIT_FOR_MOVEMENT			0"
+""
+"	Interrupts"
+"		COND_NEW_ENEMY"
+"		COND_ENEMY_DEAD"
+"		COND_HEAVY_DAMAGE"
+"		COND_HOUNDEYE_GROUP_ATTACK"
+"		COND_HOUNDEYE_GROUP_RETREAT"
+);
+DEFINE_SCHEDULE
+(
+SCHED_HOUNDEYE_GROUP_RETREAT,
+
+"	Tasks"
+"		TASK_SET_FAIL_SCHEDULE			SCHEDULE:SCHED_MOVE_AWAY"
+"		TASK_STOP_MOVING				0"
+"		TASK_WAIT						0.2"
+"		TASK_SET_TOLERANCE_DISTANCE		24"
+"		TASK_FIND_COVER_FROM_ENEMY		0"
+"		TASK_RUN_PATH					0"
+"		TASK_WAIT_FOR_MOVEMENT			0"
+"		TASK_REMEMBER					MEMORY:INCOVER"
+"		TASK_FACE_ENEMY					0"
+"		TASK_SET_ACTIVITY				ACTIVITY:ACT_IDLE"	// Translated to cover
+"		TASK_SET_SCHEDULE				SCHEDULE:SCHED_HOUNDEYE_TAKE_COVER_FROM_ENEMY"
+""
+"	Interrupts"
+"		COND_NEW_ENEMY"
+);
+DEFINE_SCHEDULE
+(
+SCHED_HOUNDEYE_GROUP_ATTACK,
+
+"	Tasks "
+"		TASK_STOP_MOVING			0"
+"		TASK_FACE_ENEMY				0"
+"		TASK_SET_ACTIVITY			ACTIVITY:ACT_IDLE_ANGRY"
+"		TASK_SPEAK_SENTENCE			0"
+"		TASK_WAIT					1"
+"		TASK_SET_SCHEDULE			SCHEDULE:SCHED_HOUND_RANGE_ATTACK1"
+""
+"	Interrupts "
+"		COND_NEW_ENEMY"
+"		COND_ENEMY_DEAD"
+"		COND_HEAVY_DAMAGE"
+);
 AI_END_CUSTOM_NPC()
