@@ -12,6 +12,9 @@
 #include "soundent.h"
 #include "game.h"
 #include "npcevent.h"
+#include "npc_antlion.h"
+#include "particle_parse.h"
+#include "te_particlesystem.h"
 #include "entitylist.h"
 #include "activitylist.h"
 #include "ai_basenpc.h"
@@ -26,7 +29,7 @@
 ConVar	sk_houndeye_health("sk_houndeye_health", "45");
 ConVar	sk_houndeye_dmg_blast("sk_houndeye_dmg_blast", "25");
 
-ConVar houndeye_attack_max_range("houndeye_attack_max_range", "384");
+ConVar houndeye_attack_max_range("houndeye_attack_max_range", "256");
 #define HOUNDEYE_TOP_MASS	 300.0f
 
 int		HOUND_AE_THUMP;
@@ -164,8 +167,10 @@ void CHoundeye::Precache(void)
 	s_iSonicEffectTexture = PrecacheModel("sprites/physbeam.vmt");
 	m_hFootstep = PrecacheScriptSound("NPC_Antlion.Footstep");
 
+	PrecacheParticleSystem("houndeye_sonicattack_ring");
+
 	BaseClass::Precache();
-}
+}               
 
 void CHoundeye::Spawn(void)
 {
@@ -173,7 +178,7 @@ void CHoundeye::Spawn(void)
 
 	SetModel("models/houndeye.mdl");
 	BaseClass::Spawn();
-	SetHullType(HULL_TINY);
+	SetHullType(HULL_WIDE_SHORT);
 	SetHullSizeNormal();
 
 	SetSolid(SOLID_BBOX);
@@ -230,9 +235,11 @@ void CHoundeye::SonicAttack(void)
 {
 	float		flAdjustedDamage;
 	float		flDist;
+	float		flRadius;
 
 	EmitSound("NPC_Houndeye.Sonic");
 
+	// Old beam effect
 	CBroadcastRecipientFilter filter;
 	te->BeamRingPoint(filter, 0.0,
 		GetAbsOrigin(),							//origin
@@ -254,6 +261,8 @@ void CHoundeye::SonicAttack(void)
 		FBEAM_FADEOUT
 		);
 
+	DispatchParticleEffect("houndeye_sonicattack_ring", PATTACH_ROOTBONE_FOLLOW, this);
+
 	CBaseEntity* pEntity = NULL;
 	// iterate on all entities in the vicinity.
 	while ((pEntity = gEntList.FindEntityInSphere(pEntity, GetAbsOrigin(), houndeye_attack_max_range.GetFloat())) != NULL)
@@ -262,6 +271,8 @@ void CHoundeye::SonicAttack(void)
 		{
 			if (!FClassnameIs(pEntity, "npc_houndeye"))
 			{// houndeyes don't hurt other houndeyes with their attack
+
+				flDist = (pEntity->WorldSpaceCenter() - GetAbsOrigin()).Length();
 
 				// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
 				// This means that you must get out of the houndeye's attack range entirely to avoid damage.
@@ -278,9 +289,47 @@ void CHoundeye::SonicAttack(void)
 					flAdjustedDamage = sk_houndeye_dmg_blast.GetFloat();
 				}
 
-				flDist = (pEntity->WorldSpaceCenter() - GetAbsOrigin()).Length();
-
 				flAdjustedDamage -= (flDist / houndeye_attack_max_range.GetFloat()) * flAdjustedDamage;
+				
+				// Cief: Flip over distant antlions.	
+				flRadius = houndeye_attack_max_range.GetFloat();
+				trace_t tr;
+				if (FClassnameIs(pEntity, "npc_antlion"))
+				{
+					// For antlions, we give only a third of the damage to balance squad damage.
+					flAdjustedDamage *= 0.30f;
+
+					CNPC_Antlion *pAntlion = static_cast<CNPC_Antlion *>(pEntity);
+					// Attempt to trace a line to hit the target
+					UTIL_TraceLine(GetAbsOrigin(), pAntlion->BodyTarget(GetAbsOrigin()), MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr);
+					if (tr.fraction < 1.0f && tr.m_pEnt != pAntlion)
+						continue;
+
+					Vector vecDir = (pAntlion->GetAbsOrigin() - GetAbsOrigin());
+					vecDir[2] = 0.0f;
+					float flDist = VectorNormalize(vecDir);
+
+					float flFalloff = RemapValClamped(flDist, 0, flRadius*0.50f, 1.0f, 0.1f);
+
+					vecDir *= (flRadius * 1.5f * flFalloff);
+					vecDir[2] += (flRadius * 0.5f * flFalloff);
+
+					pAntlion->ApplyAbsVelocityImpulse(vecDir);
+
+					// gib nearby antlions, knock over distant ones. 
+					if (flDist < 96)
+					{
+						// splat!
+						vecDir[2] += 400.0f * flFalloff;
+						CTakeDamageInfo dmgInfo(this, this, vecDir, pAntlion->GetAbsOrigin(), 100, DMG_SONIC);
+						pAntlion->TakeDamage(dmgInfo);
+					}
+					else
+					{
+						// Turn them over
+						pAntlion->Flip(true);
+					}
+				}
 
 				if (!FVisible(pEntity))
 				{
@@ -341,7 +390,7 @@ void CHoundeye::SonicAttack(void)
 								pEntity->ViewPunch(QAngle(random->RandomFloat(-5, 5), 0, random->RandomFloat(10, -10)));
 
 								//Shake the screen
-								UTIL_ScreenShake(pEntity->GetAbsOrigin(), 50, 150.0, 1.0, 1024, SHAKE_START);
+								UTIL_ScreenShake(pEntity->GetAbsOrigin(), 50, 150.0, 1.0, 512, SHAKE_START);
 
 								//Red damage indicator
 								color32 red = { 128, 0, 0, 128 };
@@ -375,8 +424,8 @@ void CHoundeye::SonicAttack(void)
 bool CHoundeye::IsJumpLegal(const Vector& startPos, const Vector& apex, const Vector& endPos) const
 {
 	const float MAX_JUMP_RISE = 96.0f;
-	const float MAX_JUMP_DISTANCE = 296.0f;
-	const float MAX_JUMP_DROP = 256.0f;
+	const float MAX_JUMP_DISTANCE = 250.0f;
+	const float MAX_JUMP_DROP = 128.0f;
 
 	if (BaseClass::IsJumpLegal(startPos, apex, endPos, MAX_JUMP_RISE, MAX_JUMP_DROP, MAX_JUMP_DISTANCE))
 	{
