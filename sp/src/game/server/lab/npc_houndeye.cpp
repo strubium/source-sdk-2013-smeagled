@@ -9,15 +9,16 @@
 #include "ai_hull.h"
 #include "ai_squadslot.h"
 #include "ai_squad.h"
+#include "ai_baseactor.h"
 #include "soundent.h"
 #include "game.h"
 #include "npcevent.h"
 #include "npc_antlion.h"
 #include "particle_parse.h"
 #include "te_particlesystem.h"
+#include "sceneentity.h"
 #include "entitylist.h"
 #include "activitylist.h"
-#include "ai_basenpc.h"
 #include "beam_flags.h"
 #include "engine/IEngineSound.h"
 #include "hl2_shareddefs.h"
@@ -90,9 +91,9 @@ enum
 
 //=========================================================
 //=========================================================
-class CHoundeye : public CAI_BaseNPC
+class CHoundeye : public CAI_BaseActor
 {
-	DECLARE_CLASS(CHoundeye, CAI_BaseNPC);
+	DECLARE_CLASS(CHoundeye, CAI_BaseActor);
 
 public:
 	void	Precache(void);
@@ -118,6 +119,8 @@ public:
 	float	MaxYawSpeed(void);
 	int		RangeAttack1Conditions(float flDot, float flDist);
 
+	void	PrescheduleThink(void);
+
 	int		SelectSchedule(void);
 	virtual	void	GatherConditions(void);
 	bool			IsValidCover(const Vector &vecCoverLocation, CAI_Hint const *pHint);
@@ -130,6 +133,9 @@ public:
 
 	virtual float	HearingSensitivity(void) { return 1.0; };
 	virtual int				GetSoundInterests(void);
+
+	bool			m_fDontBlink;// don't try to open/close eye if this bit is set!
+
 
 	DECLARE_DATADESC();
 
@@ -151,6 +157,7 @@ LINK_ENTITY_TO_CLASS(npc_houndeye, CHoundeye);
 //---------------------------------------------------------
 BEGIN_DATADESC(CHoundeye)
 
+DEFINE_FIELD(m_fDontBlink, FIELD_BOOLEAN),
 DEFINE_FIELD(m_iDeleteThisField, FIELD_INTEGER),
 
 END_DATADESC()
@@ -169,6 +176,10 @@ void CHoundeye::Precache(void)
 
 	PrecacheParticleSystem("houndeye_sonicattack_ring");
 
+	PrecacheInstancedScene("scenes/npc/houndeye/houndeye_attack.vcd");
+	PrecacheInstancedScene("scenes/npc/houndeye/houndeye_blink.vcd");
+	PrecacheInstancedScene("scenes/npc/houndeye/houndeye_flinch.vcd");
+
 	BaseClass::Precache();
 }               
 
@@ -186,15 +197,14 @@ void CHoundeye::Spawn(void)
 	SetNavType(NAV_GROUND);
 	SetMoveType(MOVETYPE_STEP);
 	SetBloodColor(BLOOD_COLOR_YELLOW);
-	//SetCollisionGroup(HL2COLLISION_GROUP_HOUNDEYE);
+
 	m_iHealth = sk_houndeye_health.GetFloat();
 	m_flFieldOfView = 0.3;
 	m_NPCState = NPC_STATE_NONE;
-
-	//AddSpawnFlags(SF_NPC_LONG_RANGE);
+	m_fDontBlink = false;
 
 	CapabilitiesClear();
-	CapabilitiesAdd(bits_CAP_MOVE_GROUND | bits_CAP_MOVE_JUMP);
+	CapabilitiesAdd(bits_CAP_MOVE_GROUND | bits_CAP_MOVE_JUMP | bits_CAP_ANIMATEDFACE | bits_CAP_TURN_HEAD);
 	CapabilitiesAdd(bits_CAP_INNATE_RANGE_ATTACK1);
 	CapabilitiesAdd(bits_CAP_SQUAD);
 
@@ -238,6 +248,8 @@ void CHoundeye::SonicAttack(void)
 	float		flRadius;
 
 	EmitSound("NPC_Houndeye.Sonic");
+
+	SetExpression("scenes/npc/houndeye/houndeye_attack.vcd");
 
 	// Old beam effect
 	CBroadcastRecipientFilter filter;
@@ -507,6 +519,8 @@ int CHoundeye::OnTakeDamage_Alive(const CTakeDamageInfo& inputInfo)
 		m_pSquad->BroadcastInteraction(g_interactionHoundeyeGroupRetreat, NULL, this);
 	}
 
+	SetExpression("scenes/npc/houndeye/houndeye_flinch.vcd");
+
 	return BaseClass::OnTakeDamage_Alive(inputInfo);
 }
 bool CHoundeye::IsAnyoneInSquadAttacking(void)
@@ -772,6 +786,41 @@ bool CHoundeye::IsValidCover(const Vector &vecCoverLocation, const CAI_Hint *pHi
 	}
 
 	return true;
+}
+//------------------------------------------------------------------------------
+// Purpose :
+// Input   :
+// Output  :
+//------------------------------------------------------------------------------
+void CHoundeye::PrescheduleThink(void)
+{
+	BaseClass::PrescheduleThink();
+
+	//Cief: HACK! Check if houndeye is attacking to clear expressions, and allow blinking if not.
+	if (!IsCurSchedule(SCHED_HOUNDEYE_RANGEATTACK1))
+	{
+		m_fDontBlink = 0;
+		ClearExpression();
+	}
+	else
+	{
+		m_fDontBlink = 1;
+	}
+	// if the hound is mad and is running, make hunt noises.
+	if (m_NPCState == NPC_STATE_COMBAT && (GetActivity() == ACT_RUN) && random->RandomFloat(0, 1) < 0.2)
+	{
+		HuntSound();
+	}
+
+	// Cief: at random, initiate a blink if not already blinking. 
+	//Adapted from previous code since default blinking looks awful on them.
+	if (!m_fDontBlink)
+	{
+		if (random->RandomInt(0, 12) == 0)
+		{// do a blink!
+			SetExpression( "scenes/npc/houndeye/houndeye_blink.vcd" );
+		}		
+	}
 }
 int CHoundeye::TranslateSchedule(int scheduleType)
 {
