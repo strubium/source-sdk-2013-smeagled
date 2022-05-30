@@ -46,7 +46,7 @@ int s_iSonicEffectTexture = -1;
 //=========================================================
 // Private activities
 //=========================================================
-int	ACT_HOUNDEYEPUNTOBJECT = -1;
+//int	ACT_HOUNDEYEPUNTOBJECT = -1;
 
 //=========================================================
 // Custom schedules
@@ -88,6 +88,19 @@ enum
 	COND_HOUNDEYE_GROUP_RALLEY,
 };
 
+//=========================================================
+// Squad Slots
+//=========================================================
+
+enum SquadSlot_T
+{
+	SQUAD_SLOT_HOUNDEYE_ATTACK1 = LAST_SHARED_SQUADSLOT,
+	SQUAD_SLOT_HOUNDEYE_ATTACK2,
+	SQUAD_SLOT_HOUNDEYE_ATTACK3,
+	SQUAD_SLOT_HOUNDEYE_ATTACK4,
+
+};
+
 
 //=========================================================
 //=========================================================
@@ -119,11 +132,17 @@ public:
 	float	MaxYawSpeed(void);
 	int		RangeAttack1Conditions(float flDot, float flDist);
 
+	bool	OverrideMoveFacing(const AILocalMoveGoal_t &move, float flInterval);
+
+	float		InnateRange1MinRange(void) { return 0.0f; }
+	float		InnateRange1MaxRange(void) { return 192.0f; }
+
 	void	PrescheduleThink(void);
 
 	int		SelectSchedule(void);
 	virtual	void	GatherConditions(void);
 	bool			IsValidCover(const Vector &vecCoverLocation, CAI_Hint const *pHint);
+	bool			IsValidShootPosition(const Vector &vecCoverLocation, CAI_Node *pNode, CAI_Hint const *pHint);
 	int TranslateSchedule(int scheduleType);
 	bool			HandleInteraction(int interactionType, void* data, CBaseCombatCharacter* pSourceEnt);
 	void			BuildScheduleTestBits();
@@ -144,7 +163,7 @@ public:
 	// for the code to operate on. Delete this field when
 	// you are ready to do your own save/restore for this
 	// character.
-	int		m_iDeleteThisField;
+	//int		m_iDeleteThisField;
 
 	DEFINE_CUSTOM_AI;
 private: HSOUNDSCRIPTHANDLE	m_hFootstep;
@@ -158,7 +177,7 @@ LINK_ENTITY_TO_CLASS(npc_houndeye, CHoundeye);
 BEGIN_DATADESC(CHoundeye)
 
 DEFINE_FIELD(m_fDontBlink, FIELD_BOOLEAN),
-DEFINE_FIELD(m_iDeleteThisField, FIELD_INTEGER),
+//DEFINE_FIELD(m_iDeleteThisField, FIELD_INTEGER),
 
 END_DATADESC()
 
@@ -172,7 +191,7 @@ void CHoundeye::Precache(void)
 	PrecacheScriptSound("NPC_Houndeye.Pain");
 	PrecacheScriptSound("NPC_Houndeye.Die");
 	s_iSonicEffectTexture = PrecacheModel("sprites/physbeam.vmt");
-	m_hFootstep = PrecacheScriptSound("NPC_Antlion.Footstep");
+	m_hFootstep = PrecacheScriptSound("NPC_Houndeye.Footstep");
 
 	PrecacheParticleSystem("houndeye_sonicattack_ring");
 
@@ -181,7 +200,7 @@ void CHoundeye::Precache(void)
 	PrecacheInstancedScene("scenes/npc/houndeye/houndeye_flinch.vcd");
 
 	BaseClass::Precache();
-}               
+}
 
 void CHoundeye::Spawn(void)
 {
@@ -208,6 +227,8 @@ void CHoundeye::Spawn(void)
 	CapabilitiesAdd(bits_CAP_INNATE_RANGE_ATTACK1);
 	CapabilitiesAdd(bits_CAP_SQUAD);
 
+	SetCollisionGroup(HL2COLLISION_GROUP_HOUNDEYE);
+
 	NPCInit();
 }
 
@@ -226,13 +247,14 @@ void CHoundeye::HandleAnimEvent(animevent_t* pEvent)
 {
 	if (pEvent->event == HOUND_AE_THUMP)
 	{
+		ClearExpression();
 		SonicAttack();
 		return;
 	}
 	if (pEvent->event == HOUND_AE_FOOTSTEP)
 	{
 		MakeAIFootstepSound(240.0f);
-		EmitSound("NPC_Antlion.Footstep", m_hFootstep, pEvent->eventtime);
+		EmitSound("NPC_Houndeye.Footstep", m_hFootstep, pEvent->eventtime);
 		return;
 	}
 	BaseClass::HandleAnimEvent(pEvent);
@@ -302,7 +324,7 @@ void CHoundeye::SonicAttack(void)
 				}
 
 				flAdjustedDamage -= (flDist / houndeye_attack_max_range.GetFloat()) * flAdjustedDamage;
-				
+
 				// Cief: Flip over distant antlions.	
 				flRadius = houndeye_attack_max_range.GetFloat();
 				trace_t tr;
@@ -553,16 +575,45 @@ int CHoundeye::RangeAttack1Conditions(float flDot, float flDist)
 	{
 		return COND_CAN_RANGE_ATTACK1;
 	}
-	if (flDist >(flMaxHoundeyeAttackMaxRange * 0.3))
+	if (flDist >(flMaxHoundeyeAttackMaxRange))
 	{
 		return COND_TOO_FAR_TO_ATTACK;
 	}
 
+	trace_t tr;
+	AI_TraceHull(GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, 1),
+		GetHullMins(), GetHullMaxs(),
+		MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+
+	if (tr.startsolid)
+	{
+		return COND_WEAPON_SIGHT_OCCLUDED;
+	}
+
+	/*
 	if (flDot < 0.6)
 	{
 		return COND_NOT_FACING_ATTACK;
 	}
+	*/
 	return COND_CAN_RANGE_ATTACK1;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: turn in the direction of movement
+// Output :
+//-----------------------------------------------------------------------------
+bool CHoundeye::OverrideMoveFacing(const AILocalMoveGoal_t &move, float flInterval)
+{
+	if (GetEnemy())
+	{
+		if (IsCurSchedule(SCHED_HOUNDEYE_CHASE_ENEMY) && EnemyDistance(GetEnemy()) < houndeye_attack_max_range.GetFloat())
+		{
+			AddFacingTarget(GetEnemy()->GetAbsOrigin(), 1.0f, 0.2f);
+		}
+	}
+
+	return BaseClass::OverrideMoveFacing(move, flInterval);
 }
 
 //-----------------------------------------------------------------------------
@@ -671,10 +722,9 @@ int CHoundeye::SelectSchedule(void)
 
 		if (HasCondition(COND_CAN_RANGE_ATTACK1))
 		{
-			if (OccupyStrategySlotRange(SQUAD_SLOT_ATTACK1, SQUAD_SLOT_ATTACK2))
+			if (OccupyStrategySlotRange(SQUAD_SLOT_HOUNDEYE_ATTACK1, SQUAD_SLOT_HOUNDEYE_ATTACK3))
 				return SCHED_HOUNDEYE_RANGEATTACK1;
 			return SCHED_COMBAT_FACE;
-			//ClearCondition(COND_CAN_RANGE_ATTACK1);
 		}
 		if (HasCondition(COND_HOUNDEYE_SQUADMATE_FOUND_ENEMY))
 		{
@@ -683,7 +733,7 @@ int CHoundeye::SelectSchedule(void)
 			return SCHED_HOUNDEYE_CHASE_ENEMY;
 		}
 
-		if (HasCondition(COND_TOO_FAR_TO_ATTACK))
+		if (HasCondition(COND_TOO_FAR_TO_ATTACK) || !HasCondition(COND_SEE_ENEMY) || HasCondition(COND_WEAPON_SIGHT_OCCLUDED))
 		{
 
 			return SCHED_HOUNDEYE_CHASE_ENEMY;
@@ -722,7 +772,7 @@ int CHoundeye::SelectSchedule(void)
 		pSound = GetBestSound();
 
 		Assert(pSound != NULL);
-		if (pSound)
+		if (pSound && !FInViewCone(pSound->GetSoundOrigin()))
 		{
 			HuntSound();
 			return SCHED_HOUND_INVESTIGATE_SOUND;
@@ -787,6 +837,42 @@ bool CHoundeye::IsValidCover(const Vector &vecCoverLocation, const CAI_Hint *pHi
 
 	return true;
 }
+
+bool CHoundeye::IsValidShootPosition(const Vector &vecCoverLocation, CAI_Node *pNode, CAI_Hint const *pHint)
+{
+
+	if (!BaseClass::IsValidShootPosition(vecCoverLocation, pNode, pHint))
+		return false;
+
+	if (m_pSquad)
+	{
+		AISquadIter_t iter;
+		CAI_BaseNPC *pSquadmate = GetSquad() ? GetSquad()->GetFirstMember(&iter) : NULL;
+		while (pSquadmate)
+		{
+			if (pSquadmate != this)
+			{
+				Vector vecPos = pSquadmate->GetAbsOrigin();
+				float SquadDist = (vecPos - vecCoverLocation).Length();
+
+				if (pSquadmate->GetNavigator()->IsGoalActive())
+				{
+					vecPos = pSquadmate->GetNavigator()->GetGoalPos();
+
+					SquadDist = (vecPos - vecCoverLocation).Length();
+				}
+
+				if (SquadDist <= 96.0f)
+					return false;
+			}
+
+			pSquadmate = GetSquad()->GetNextMember(&iter);
+		}
+	}
+
+	return true;
+}
+
 //------------------------------------------------------------------------------
 // Purpose :
 // Input   :
@@ -818,8 +904,8 @@ void CHoundeye::PrescheduleThink(void)
 	{
 		if (random->RandomInt(0, 12) == 0)
 		{// do a blink!
-			SetExpression( "scenes/npc/houndeye/houndeye_blink.vcd" );
-		}		
+			SetExpression("scenes/npc/houndeye/houndeye_blink.vcd");
+		}
 	}
 }
 int CHoundeye::TranslateSchedule(int scheduleType)
@@ -858,6 +944,19 @@ void CHoundeye::BuildScheduleTestBits()
 	{
 		SetCustomInterruptCondition(COND_HOUNDEYE_SQUADMATE_FOUND_ENEMY);
 	}
+
+	if (IsCurSchedule(SCHED_HOUNDEYE_CHASE_ENEMY) && GetEnemy())
+	{
+		trace_t tr;
+		AI_TraceHull(GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, 1),
+			GetHullMins(), GetHullMaxs(),
+			MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+
+		if (EnemyDistance(GetEnemy()) < houndeye_attack_max_range.GetFloat() * .35 && !tr.startsolid)
+		{
+			SetCustomInterruptCondition(COND_CAN_RANGE_ATTACK1);
+		}
+	}
 }
 
 AI_BEGIN_CUSTOM_NPC(npc_houndeye, CHoundeye)
@@ -890,9 +989,9 @@ SCHED_HOUNDEYE_CHASE_ENEMY,
 
 "	Tasks"
 "		TASK_STOP_MOVING				0"
-"		TASK_SET_FAIL_SCHEDULE			SCHEDULE:SCHED_RUN_RANDOM"
-//	"		TASK_SET_TOLERANCE_DISTANCE		24"
-"		TASK_GET_CHASE_PATH_TO_ENEMY	300"
+//"		TASK_SET_FAIL_SCHEDULE			SCHEDULE:SCHED_RUN_RANDOM"
+	"		TASK_SET_TOLERANCE_DISTANCE		32"
+"		TASK_GET_PATH_TO_ENEMY_LKP_LOS	0"
 "		TASK_RUN_PATH					0"
 "		TASK_WAIT_FOR_MOVEMENT			0"
 "		TASK_FACE_ENEMY			0"
@@ -901,7 +1000,7 @@ SCHED_HOUNDEYE_CHASE_ENEMY,
 "		COND_NEW_ENEMY"
 "		COND_ENEMY_DEAD"
 "		COND_ENEMY_UNREACHABLE"
-"		COND_CAN_RANGE_ATTACK1"
+//"		COND_CAN_RANGE_ATTACK1"
 "		COND_TOO_CLOSE_TO_ATTACK"
 "		COND_TASK_FAILED"
 "		COND_LOST_ENEMY"
