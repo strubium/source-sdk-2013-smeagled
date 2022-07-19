@@ -19,6 +19,8 @@ rem ====================================
 
 
 call buildsdkshaders.bat
+call buildincludes.bat stdshader_dx9_20b     -game %GAMEDIR% -source %SOURCEDIR%
+call buildincludes.bat stdshader_dx9_30        -game %GAMEDIR% -source %SOURCEDIR% -dx9_30 -force30
 
 @echo Finished building shaders
 @pause
