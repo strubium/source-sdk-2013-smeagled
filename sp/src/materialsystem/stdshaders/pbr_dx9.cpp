@@ -9,12 +9,12 @@
 #include "cpp_shader_constant_register_map.h"
 
 // Includes for PS30
-#include "include/pbr_vs30.inc"
-#include "include/pbr_ps30.inc"
+#include "pbr_vs30.inc"
+#include "pbr_ps30.inc"
 
 // Includes for PS20b
-#include "include/pbr_vs20.inc"
-#include "include/pbr_ps20b.inc"
+#include "pbr_vs20b.inc"
+#include "pbr_ps20b.inc"
 
 // Defining samplers
 const Sampler_t SAMPLER_BASETEXTURE = SHADER_SAMPLER0;
@@ -353,9 +353,9 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             if (!g_pHardwareConfig->SupportsShaderModel_3_0() || mat_pbr_force_20b.GetBool())
             {
                 // Setting up static vertex shader
-                DECLARE_STATIC_VERTEX_SHADER(pbr_vs20);
+                DECLARE_STATIC_VERTEX_SHADER(pbr_vs20b);
                 SET_STATIC_VERTEX_SHADER_COMBO(WVT, bIsWVT);
-                SET_STATIC_VERTEX_SHADER(pbr_vs20);
+                SET_STATIC_VERTEX_SHADER(pbr_vs20b);
 
                 // Setting up static pixel shader
                 DECLARE_STATIC_PIXEL_SHADER(pbr_ps20b);
@@ -583,13 +583,13 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             if (!g_pHardwareConfig->SupportsShaderModel_3_0() || mat_pbr_force_20b.GetBool())
             {
                 // Setting up dynamic vertex shader
-                DECLARE_DYNAMIC_VERTEX_SHADER(pbr_vs20);
+                DECLARE_DYNAMIC_VERTEX_SHADER(pbr_vs20b);
                 SET_DYNAMIC_VERTEX_SHADER_COMBO(DOWATERFOG, fogIndex);
                 SET_DYNAMIC_VERTEX_SHADER_COMBO(SKINNING, numBones > 0);
                 SET_DYNAMIC_VERTEX_SHADER_COMBO(LIGHTING_PREVIEW, pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING) != 0);
                 SET_DYNAMIC_VERTEX_SHADER_COMBO(COMPRESSED_VERTS, (int)vertexCompression);
                 SET_DYNAMIC_VERTEX_SHADER_COMBO(NUM_LIGHTS, lightState.m_nNumLights);
-                SET_DYNAMIC_VERTEX_SHADER(pbr_vs20);
+                SET_DYNAMIC_VERTEX_SHADER(pbr_vs20b);
 
                 // Setting up dynamic pixel shader
                 DECLARE_DYNAMIC_PIXEL_SHADER(pbr_ps20b);

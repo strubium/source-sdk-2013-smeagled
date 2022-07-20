@@ -2,6 +2,7 @@
 // ($PIXELFOGTYPE == 0) && ($WRITEWATERFOGTODESTALPHA != 0)
 // ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTSHADOWS == 1 )
 // ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTDEPTHFILTERMODE != 0 )
+// !$HSV && $HSV_BLEND
 // defined $HDRTYPE && defined $HDRENABLED && !$HDRTYPE && $HDRENABLED
 // defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
 // defined $LIGHTING_PREVIEW && defined $HDRTYPE && $LIGHTING_PREVIEW && $HDRTYPE != 0
@@ -37,13 +38,17 @@ class pbr_ps20b_Static_Index
 	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
 	unsigned int m_nLIGHTMAPPED : 2;
 	unsigned int m_nEMISSIVE : 2;
-	unsigned int m_nSPECULAR : 2;
+	unsigned int m_nWVT : 2;
+	unsigned int m_nHSV : 2;
+	unsigned int m_nHSV_BLEND : 2;
 #ifdef _DEBUG
 	bool m_bFLASHLIGHT : 1;
 	bool m_bFLASHLIGHTDEPTHFILTERMODE : 1;
 	bool m_bLIGHTMAPPED : 1;
 	bool m_bEMISSIVE : 1;
-	bool m_bSPECULAR : 1;
+	bool m_bWVT : 1;
+	bool m_bHSV : 1;
+	bool m_bHSV_BLEND : 1;
 #endif	// _DEBUG
 public:
 	void SetFLASHLIGHT( int i )
@@ -82,12 +87,30 @@ public:
 #endif	// _DEBUG
 	}
 
-	void SetSPECULAR( int i )
+	void SetWVT( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
-		m_nSPECULAR = i;
+		m_nWVT = i;
 #ifdef _DEBUG
-		m_bSPECULAR = true;
+		m_bWVT = true;
+#endif	// _DEBUG
+	}
+
+	void SetHSV( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nHSV = i;
+#ifdef _DEBUG
+		m_bHSV = true;
+#endif	// _DEBUG
+	}
+
+	void SetHSV_BLEND( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nHSV_BLEND = i;
+#ifdef _DEBUG
+		m_bHSV_BLEND = true;
 #endif	// _DEBUG
 	}
 
@@ -97,24 +120,28 @@ public:
 		m_nFLASHLIGHTDEPTHFILTERMODE = 0;
 		m_nLIGHTMAPPED = 0;
 		m_nEMISSIVE = 0;
-		m_nSPECULAR = 0;
+		m_nWVT = 0;
+		m_nHSV = 0;
+		m_nHSV_BLEND = 0;
 #ifdef _DEBUG
 		m_bFLASHLIGHT = false;
 		m_bFLASHLIGHTDEPTHFILTERMODE = false;
 		m_bLIGHTMAPPED = false;
 		m_bEMISSIVE = false;
-		m_bSPECULAR = false;
+		m_bWVT = false;
+		m_bHSV = false;
+		m_bHSV_BLEND = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bFLASHLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bLIGHTMAPPED && m_bEMISSIVE && m_bSPECULAR );
-		return ( 80 * m_nFLASHLIGHT ) + ( 160 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 480 * m_nLIGHTMAPPED ) + ( 960 * m_nEMISSIVE ) + ( 1920 * m_nSPECULAR ) + 0;
+		Assert( m_bFLASHLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bLIGHTMAPPED && m_bEMISSIVE && m_bWVT && m_bHSV && m_bHSV_BLEND );
+		return ( 80 * m_nFLASHLIGHT ) + ( 160 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 480 * m_nLIGHTMAPPED ) + ( 960 * m_nEMISSIVE ) + ( 1920 * m_nWVT ) + ( 3840 * m_nHSV ) + ( 7680 * m_nHSV_BLEND ) + 0;
 	}
 };
 
-#define shaderStaticTest_pbr_ps20b psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_LIGHTMAPPED + psh_forgot_to_set_static_EMISSIVE + psh_forgot_to_set_static_SPECULAR
+#define shaderStaticTest_pbr_ps20b psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_LIGHTMAPPED + psh_forgot_to_set_static_EMISSIVE + psh_forgot_to_set_static_WVT + psh_forgot_to_set_static_HSV + psh_forgot_to_set_static_HSV_BLEND
 
 
 class pbr_ps20b_Dynamic_Index

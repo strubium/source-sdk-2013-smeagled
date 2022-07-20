@@ -65,27 +65,6 @@ public:
 #endif
 	}
 private:
-	int m_nUSEENVAMBIENT;
-#ifdef _DEBUG
-	bool m_bUSEENVAMBIENT;
-#endif
-public:
-	void SetUSEENVAMBIENT( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nUSEENVAMBIENT = i;
-#ifdef _DEBUG
-		m_bUSEENVAMBIENT = true;
-#endif
-	}
-	void SetUSEENVAMBIENT( bool i )
-	{
-		m_nUSEENVAMBIENT = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bUSEENVAMBIENT = true;
-#endif
-	}
-private:
 	int m_nEMISSIVE;
 #ifdef _DEBUG
 	bool m_bEMISSIVE;
@@ -104,27 +83,6 @@ public:
 		m_nEMISSIVE = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bEMISSIVE = true;
-#endif
-	}
-private:
-	int m_nSPECULAR;
-#ifdef _DEBUG
-	bool m_bSPECULAR;
-#endif
-public:
-	void SetSPECULAR( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nSPECULAR = i;
-#ifdef _DEBUG
-		m_bSPECULAR = true;
-#endif
-	}
-	void SetSPECULAR( bool i )
-	{
-		m_nSPECULAR = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bSPECULAR = true;
 #endif
 	}
 private:
@@ -148,6 +106,69 @@ public:
 		m_bPARALLAXOCCLUSION = true;
 #endif
 	}
+private:
+	int m_nWVT;
+#ifdef _DEBUG
+	bool m_bWVT;
+#endif
+public:
+	void SetWVT( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nWVT = i;
+#ifdef _DEBUG
+		m_bWVT = true;
+#endif
+	}
+	void SetWVT( bool i )
+	{
+		m_nWVT = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bWVT = true;
+#endif
+	}
+private:
+	int m_nHSV;
+#ifdef _DEBUG
+	bool m_bHSV;
+#endif
+public:
+	void SetHSV( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nHSV = i;
+#ifdef _DEBUG
+		m_bHSV = true;
+#endif
+	}
+	void SetHSV( bool i )
+	{
+		m_nHSV = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bHSV = true;
+#endif
+	}
+private:
+	int m_nHSV_BLEND;
+#ifdef _DEBUG
+	bool m_bHSV_BLEND;
+#endif
+public:
+	void SetHSV_BLEND( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nHSV_BLEND = i;
+#ifdef _DEBUG
+		m_bHSV_BLEND = true;
+#endif
+	}
+	void SetHSV_BLEND( bool i )
+	{
+		m_nHSV_BLEND = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bHSV_BLEND = true;
+#endif
+	}
 public:
 	pbr_ps30_Static_Index( )
 	{
@@ -164,34 +185,38 @@ public:
 #endif // _DEBUG
 		m_nLIGHTMAPPED = 0;
 #ifdef _DEBUG
-		m_bUSEENVAMBIENT = false;
-#endif // _DEBUG
-		m_nUSEENVAMBIENT = 0;
-#ifdef _DEBUG
 		m_bEMISSIVE = false;
 #endif // _DEBUG
 		m_nEMISSIVE = 0;
 #ifdef _DEBUG
-		m_bSPECULAR = false;
-#endif // _DEBUG
-		m_nSPECULAR = 0;
-#ifdef _DEBUG
 		m_bPARALLAXOCCLUSION = false;
 #endif // _DEBUG
 		m_nPARALLAXOCCLUSION = 0;
+#ifdef _DEBUG
+		m_bWVT = false;
+#endif // _DEBUG
+		m_nWVT = 0;
+#ifdef _DEBUG
+		m_bHSV = false;
+#endif // _DEBUG
+		m_nHSV = 0;
+#ifdef _DEBUG
+		m_bHSV_BLEND = false;
+#endif // _DEBUG
+		m_nHSV_BLEND = 0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bFLASHLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bLIGHTMAPPED && m_bUSEENVAMBIENT && m_bEMISSIVE && m_bSPECULAR && m_bPARALLAXOCCLUSION;
+		bool bAllStaticVarsDefined = m_bFLASHLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bLIGHTMAPPED && m_bEMISSIVE && m_bPARALLAXOCCLUSION && m_bWVT && m_bHSV && m_bHSV_BLEND;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 80 * m_nFLASHLIGHT ) + ( 160 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 480 * m_nLIGHTMAPPED ) + ( 960 * m_nUSEENVAMBIENT ) + ( 1920 * m_nEMISSIVE ) + ( 3840 * m_nSPECULAR ) + ( 7680 * m_nPARALLAXOCCLUSION ) + 0;
+		return ( 80 * m_nFLASHLIGHT ) + ( 160 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 480 * m_nLIGHTMAPPED ) + ( 960 * m_nEMISSIVE ) + ( 1920 * m_nPARALLAXOCCLUSION ) + ( 3840 * m_nWVT ) + ( 7680 * m_nHSV ) + ( 15360 * m_nHSV_BLEND ) + 0;
 	}
 };
-#define shaderStaticTest_pbr_ps30 psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_LIGHTMAPPED + psh_forgot_to_set_static_USEENVAMBIENT + psh_forgot_to_set_static_EMISSIVE + psh_forgot_to_set_static_SPECULAR + psh_forgot_to_set_static_PARALLAXOCCLUSION + 0
+#define shaderStaticTest_pbr_ps30 psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_LIGHTMAPPED + psh_forgot_to_set_static_EMISSIVE + psh_forgot_to_set_static_PARALLAXOCCLUSION + psh_forgot_to_set_static_WVT + psh_forgot_to_set_static_HSV + psh_forgot_to_set_static_HSV_BLEND + 0
 class pbr_ps30_Dynamic_Index
 {
 private:

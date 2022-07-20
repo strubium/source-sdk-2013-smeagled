@@ -1,20 +1,47 @@
 #include "shaderlib/cshader.h"
 class pbr_vs30_Static_Index
 {
+private:
+	int m_nWVT;
+#ifdef _DEBUG
+	bool m_bWVT;
+#endif
+public:
+	void SetWVT( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nWVT = i;
+#ifdef _DEBUG
+		m_bWVT = true;
+#endif
+	}
+	void SetWVT( bool i )
+	{
+		m_nWVT = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bWVT = true;
+#endif
+	}
 public:
 	pbr_vs30_Static_Index( )
 	{
+#ifdef _DEBUG
+		m_bWVT = false;
+#endif // _DEBUG
+		m_nWVT = 0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
+		bool bAllStaticVarsDefined = m_bWVT;
+		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return 0;
+		return ( 80 * m_nWVT ) + 0;
 	}
 };
-#define shaderStaticTest_pbr_vs30 0
+#define shaderStaticTest_pbr_vs30 vsh_forgot_to_set_static_WVT + 0
 class pbr_vs30_Dynamic_Index
 {
 private:
