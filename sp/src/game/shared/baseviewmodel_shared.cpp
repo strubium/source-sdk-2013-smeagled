@@ -771,32 +771,3 @@ bool CBaseViewModel::GetAttachmentVelocity( int number, Vector &originVel, Quate
 }
 
 #endif
-
-
-	CBaseViewModel	*GetVMOwner();
-
-	CBaseCombatWeapon *GetOwningWeapon( void );
-
-	CHandle<CBaseViewModel> m_hVMOwner;
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CBaseViewModel *CHandViewModel::GetVMOwner()
-{
-	if (!m_hVMOwner)
-		m_hVMOwner = assert_cast<CBaseViewModel*>(GetMoveParent());
-	return m_hVMOwner;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CBaseCombatWeapon *CHandViewModel::GetOwningWeapon()
-{
-	CBaseViewModel *pVM = GetVMOwner();
-	if (pVM)
-		return pVM->GetOwningWeapon();
-	else
-		return NULL;
-}
