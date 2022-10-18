@@ -44,8 +44,8 @@ void Gstring_volumetrics_subdiv_Callback(IConVar *var, const char *pOldValue, fl
 static ConVar gstring_volumetrics_subdiv("gstring_volumetrics_subdiv", "0", 0, "", Gstring_volumetrics_subdiv_Callback);
 
 #ifdef ASW_PROJECTED_TEXTURES
-static ConVar mat_slopescaledepthbias_shadowmap( "mat_slopescaledepthbias_shadowmap", "16", FCVAR_CHEAT );
-static ConVar mat_depthbias_shadowmap(	"mat_depthbias_shadowmap", "0.00001", FCVAR_CHEAT  );
+extern ConVarRef mat_slopescaledepthbias_shadowmap;
+extern ConVarRef mat_depthbias_shadowmap;
 
 float C_EnvProjectedTexture::m_flVisibleBBoxMinHeight = -FLT_MAX;
 
@@ -321,6 +321,8 @@ void C_EnvProjectedTexture::UpdateLight( void )
 
 				//			VectorNormalize( vRight );
 				//			VectorNormalize( vUp );
+
+				VectorVectors( vForward, vRight, vUp );
 			}
 		}
 		else

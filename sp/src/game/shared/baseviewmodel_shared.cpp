@@ -295,6 +295,19 @@ void CBaseViewModel::AddEffects( int nEffects )
 		SetControlPanelsActive( false );
 	}
 
+#ifdef MAPBASE
+	if (GetOwningWeapon() && GetOwningWeapon()->UsesHands())
+	{
+		// If using hands, apply effect changes to any viewmodel children as well
+		// (fixes hand models)
+		for (CBaseEntity *pChild = FirstMoveChild(); pChild != NULL; pChild = pChild->NextMovePeer())
+		{
+			if (pChild->GetClassname()[0] == 'h')
+				pChild->AddEffects( nEffects );
+		}
+	}
+#endif
+
 	BaseClass::AddEffects( nEffects );
 }
 
@@ -307,6 +320,19 @@ void CBaseViewModel::RemoveEffects( int nEffects )
 	{
 		SetControlPanelsActive( true );
 	}
+
+#ifdef MAPBASE
+	if (GetOwningWeapon() && GetOwningWeapon()->UsesHands())
+	{
+		// If using hands, apply effect changes to any viewmodel children as well
+		// (fixes hand models)
+		for (CBaseEntity *pChild = FirstMoveChild(); pChild != NULL; pChild = pChild->NextMovePeer())
+		{
+			if (pChild->GetClassname()[0] == 'h')
+				pChild->RemoveEffects( nEffects );
+		}
+	}
+#endif
 
 	BaseClass::RemoveEffects( nEffects );
 }
@@ -343,6 +369,18 @@ void CBaseViewModel::SetWeaponModel( const char *modelname, CBaseCombatWeapon *w
 
 		bool showControlPanels = weapon && weapon->ShouldShowControlPanels();
 		SetControlPanelsActive( showControlPanels );
+	}
+#endif
+
+#ifdef MAPBASE
+	// If our owning weapon doesn't support hands, disable the hands viewmodel(s)
+	bool bSupportsHands = weapon != NULL ? weapon->UsesHands() : false;
+	for (CBaseEntity *pChild = FirstMoveChild(); pChild != NULL; pChild = pChild->NextMovePeer())
+	{
+		if (pChild->GetClassname()[0] == 'h')
+		{
+			bSupportsHands ? pChild->RemoveEffects( EF_NODRAW ) : pChild->AddEffects( EF_NODRAW );
+		}
 	}
 #endif
 }
@@ -438,7 +476,7 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 		g_ClientVirtualReality.OverrideViewModelTransform( vmorigin, vmangles, pWeapon && pWeapon->ShouldUseLargeViewModelVROverride() );
 	}
 
-#ifdef CSS_WEAPONS_IN_HL2 // This code originates from Mapbase v7.0. In the event of a merge conflict, it should take precedence over this code.
+#ifdef MAPBASE
 	// Flip the view if we should be flipping
 	if (ShouldFlipViewModel())
 	{
@@ -506,6 +544,23 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 		VectorSubtract( forward, m_vecLastFacing, vDifference );
 
 		float flSpeed = 5.0f;
+
+#ifdef MAPBASE
+		CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
+		if (pWeapon)
+		{
+			const FileWeaponInfo_t *pInfo = &pWeapon->GetWpnData();
+			if (pInfo->m_flSwayScale != 1.0f)
+			{
+				vDifference *= pInfo->m_flSwayScale;
+				pInfo->m_flSwayScale != 0.0f ? flSpeed /= pInfo->m_flSwayScale : flSpeed = 0.0f;
+			}
+			if (pInfo->m_flSwaySpeedScale != 1.0f)
+			{
+				flSpeed *= pInfo->m_flSwaySpeedScale;
+			}
+		}
+#endif
 
 		// If we start to lag too far behind, we'll increase the "catch up" speed.  Solves the problem with fast cl_yawspeed, m_yaw or joysticks
 		//  rotating quickly.  The old code would slam lastfacing with origin causing the viewmodel to pop to a new position
