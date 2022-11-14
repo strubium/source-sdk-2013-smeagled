@@ -127,6 +127,8 @@ public:
 	void SonicAttack(void);
 	bool IsAnyoneInSquadAttacking(void);
 
+	void InputSonicAttack(inputdata_t &inputdata);
+
 	void Event_Killed(const CTakeDamageInfo &info);
 
 	float	MaxYawSpeed(void);
@@ -176,6 +178,7 @@ LINK_ENTITY_TO_CLASS(npc_houndeye, CHoundeye);
 //---------------------------------------------------------
 BEGIN_DATADESC(CHoundeye)
 
+DEFINE_INPUTFUNC(FIELD_VOID, "DoSonicAttack", InputSonicAttack),
 DEFINE_FIELD(m_fDontBlink, FIELD_BOOLEAN),
 //DEFINE_FIELD(m_iDeleteThisField, FIELD_INTEGER),
 
@@ -519,6 +522,11 @@ void CHoundeye::PainSound(const CTakeDamageInfo& info)
 void CHoundeye::DeathSound(const CTakeDamageInfo& info)
 {
 	EmitSound("NPC_Houndeye.Die");
+}
+
+void CHoundeye::InputSonicAttack(inputdata_t &inputdata)
+{
+	SetSchedule(SCHED_HOUNDEYE_RANGEATTACK1);
 }
 
 int CHoundeye::OnTakeDamage_Alive(const CTakeDamageInfo& inputInfo)
