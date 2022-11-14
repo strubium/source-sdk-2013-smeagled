@@ -100,13 +100,7 @@ public:
 #ifdef ASW_PROJECTED_TEXTURES
 	virtual void GetFrustumExtents( ClientShadowHandle_t handle, Vector &vecMin, Vector &vecMax ) = 0;
 #endif
-	//volumetrics
-	virtual ShadowHandle_t GetShadowHandle(ClientShadowHandle_t clienthandle) = 0;
-	virtual ShadowHandle_t GetActiveDepthTextureHandle() = 0;
-	virtual int GetNumShadowDepthtextures() = 0;
-	virtual CTextureReference GetShadowDepthTex(int num) = 0;
-	virtual ShadowHandle_t GetShadowDepthHandle(int num) = 0;
-	//endvolumetrics
+
 #ifdef DYNAMIC_RTT_SHADOWS
 	// Toggle shadow casting from world light sources
 	virtual void SetShadowFromWorldLightsEnabled( bool bEnable ) = 0;

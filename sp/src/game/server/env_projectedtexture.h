@@ -7,7 +7,6 @@
 
 #define ENV_PROJECTEDTEXTURE_STARTON			(1<<0)
 #define ENV_PROJECTEDTEXTURE_ALWAYSUPDATE		(1<<1)
-#define ENV_PROJECTEDTEXTURE_VOLUMETRICS_START_ON		(1<<2)
 
 #ifdef ASW_PROJECTED_TEXTURES
 //-----------------------------------------------------------------------------
@@ -51,7 +50,6 @@ public:
 	void InputSetLightColor( inputdata_t &inputdata );
 	void InputSetSpotlightTexture( inputdata_t &inputdata );
 	void InputSetAmbient( inputdata_t &inputdata );
-	void InputSetEnableVolumetrics(inputdata_t &inputdata);
 #ifdef MAPBASE
 	void InputSetSpotlightFrame( inputdata_t &inputdata );
 	void InputSetBrightness( inputdata_t &inputdata );
@@ -101,12 +99,6 @@ private:
 	CNetworkVar( float, m_flNearZ );
 	CNetworkVar( float, m_flFarZ );
 	CNetworkVar( int, m_nShadowQuality );
-	CNetworkVar(bool, m_bEnableVolumetrics);
-	CNetworkVar(bool, m_bEnableVolumetricsLOD);
-	CNetworkVar(float, m_flVolumetricsFadeDistance);
-	CNetworkVar(int, m_iVolumetricsQuality);
-	CNetworkVar(float, m_flVolumetricsQualityBias);
-	CNetworkVar(float, m_flVolumetricsMultiplier);
 #ifdef MAPBASE
 	CNetworkVar( float, m_flConstantAtten );
 	CNetworkVar( float, m_flLinearAtten );

@@ -10,5 +10,4 @@ $Include "$SRCDIR\materialsystem\stdshaders\game_shader_dx9_base.vpc"
 
 $Project "Shaders (Episodic)"
 {
-	$File	"gstring_light_volumetrics.cpp"
 }

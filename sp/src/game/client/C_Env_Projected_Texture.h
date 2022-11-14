@@ -41,41 +41,6 @@ public:
 
 	void	UpdateLight( void );
 
-	//Volumetrics
-	virtual void UpdateOnRemove()
-	{
-		if (m_pVolmetricMesh != NULL)
-		{
-			CMatRenderContextPtr pRenderContext(materials);
-			pRenderContext->DestroyStaticMesh(m_pVolmetricMesh);
-			m_pVolmetricMesh = NULL;
-		}
-		BaseClass::UpdateOnRemove();
-	}
-
-	virtual bool					IsTransparent() { return true; }
-	virtual bool					IsTwoPass() { return false; }
-
-	virtual void GetRenderBoundsWorldspace(Vector& mins, Vector& maxs)
-	{
-		if (m_bEnableVolumetrics)
-		{
-			mins = m_vecRenderBoundsMin;
-			maxs = m_vecRenderBoundsMax;
-		}
-		else
-		{
-			BaseClass::GetRenderBoundsWorldspace(mins, maxs);
-		}
-	}
-	virtual bool ShouldDraw() { return true; }
-	virtual int DrawModel(int flags);
-
-	virtual bool ShouldReceiveProjectedTextures(int flags) { return false; }
-
-	void ClearVolumetricsMesh();
-	//end volumetrics
-
 	C_EnvProjectedTexture();
 	~C_EnvProjectedTexture();
 
@@ -88,13 +53,6 @@ private:
 	inline bool IsBBoxVisible( void );
 	bool IsBBoxVisible( Vector vecExtentsMin,
 						Vector vecExtentsMax );
-	//volumetrics
-	void RebuildVolumetricMesh();
-	void GetShadowViewSetup(CViewSetup &setup);
-
-	IMesh	*m_pVolmetricMesh;
-	CMaterialReference m_matVolumetricsMaterial;
-	//end volumetrics
 
 	ClientShadowHandle_t m_LightHandle;
 	bool m_bForceUpdate;
@@ -138,20 +96,6 @@ private:
 	bool		m_bAlwaysDraw;
 	//bool		m_bProjectedTextureVersion;
 #endif
-	//volumetrics
-	FlashlightState_t	m_FlashlightState;
-	Vector m_vecRenderBoundsMin, m_vecRenderBoundsMax;
-
-	bool m_bEnableVolumetrics;
-	bool m_bEnableVolumetricsLOD;
-	float m_flVolumetricsFadeDistance;
-	int m_iVolumetricsQuality;
-	float m_flVolumetricsMultiplier;
-	float m_flVolumetricsQualityBias;
-
-	float m_flLastFOV;
-	int m_iCurrentVolumetricsSubDiv;
-	//end volumetrics
 
 	Vector	m_vecExtentsMin;
 	Vector	m_vecExtentsMax;
