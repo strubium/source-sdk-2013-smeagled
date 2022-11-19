@@ -30,7 +30,7 @@
 ConVar	sk_houndeye_health("sk_houndeye_health", "45");
 ConVar	sk_houndeye_dmg_blast("sk_houndeye_dmg_blast", "25");
 
-ConVar houndeye_attack_max_range("houndeye_attack_max_range", "256");
+ConVar houndeye_attack_max_range("houndeye_attack_max_range", "280");
 #define HOUNDEYE_TOP_MASS	 300.0f
 
 int		HOUND_AE_THUMP;
@@ -135,6 +135,7 @@ public:
 	int		RangeAttack1Conditions(float flDot, float flDist);
 
 	bool	OverrideMoveFacing(const AILocalMoveGoal_t &move, float flInterval);
+	bool    MovementCost(int moveType, const Vector &vecStart, const Vector &vecEnd, float *pCost);
 
 	float		InnateRange1MinRange(void) { return 0.0f; }
 	float		InnateRange1MaxRange(void) { return 192.0f; }
@@ -230,7 +231,7 @@ void CHoundeye::Spawn(void)
 	CapabilitiesAdd(bits_CAP_INNATE_RANGE_ATTACK1);
 	CapabilitiesAdd(bits_CAP_SQUAD);
 
-	SetCollisionGroup(HL2COLLISION_GROUP_HOUNDEYE);
+	//SetCollisionGroup(HL2COLLISION_GROUP_HOUNDEYE);
 
 	NPCInit();
 }
@@ -601,7 +602,7 @@ int CHoundeye::RangeAttack1Conditions(float flDot, float flDist)
 	/*
 	if (flDot < 0.6)
 	{
-		return COND_NOT_FACING_ATTACK;
+	return COND_NOT_FACING_ATTACK;
 	}
 	*/
 	return COND_CAN_RANGE_ATTACK1;
@@ -619,10 +620,46 @@ bool CHoundeye::OverrideMoveFacing(const AILocalMoveGoal_t &move, float flInterv
 		{
 			AddFacingTarget(GetEnemy()->GetAbsOrigin(), 1.0f, 0.2f);
 		}
+		else return false;
 	}
 
 	return BaseClass::OverrideMoveFacing(move, flInterval);
 }
+
+bool CHoundeye::MovementCost(int moveType, const Vector &vecStart, const Vector &vecEnd, float *pCost)
+{
+	float multiplier = 1;
+
+	if (!OccupyStrategySlotRange(SQUAD_SLOT_HOUNDEYE_ATTACK1, SQUAD_SLOT_HOUNDEYE_ATTACK2))
+	{
+		Vector	moveDir = (vecEnd - vecStart);
+		VectorNormalize(moveDir);
+		if (m_pSquad)
+		{
+			AISquadIter_t iter;
+
+			CAI_BaseNPC *pSquadmate = m_pSquad ? m_pSquad->GetFirstMember(&iter) : NULL;
+			while (pSquadmate)
+		{
+				Vector	SquadmateDir = (pSquadmate->GetAbsOrigin() - vecStart);
+				VectorNormalize(SquadmateDir);
+
+				// If we're moving towards our enemy, then the cost is much higher than normal
+				if (DotProduct(SquadmateDir, moveDir) > 0.5f)
+				{
+					multiplier += 50.0f;
+				}
+
+				pSquadmate = m_pSquad->GetNextMember(&iter);
+			}
+		}
+	}
+
+	*pCost *= multiplier;
+
+	return (multiplier != 1);
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -804,7 +841,6 @@ void CHoundeye::GatherConditions(void)
 {
 	// Call our base
 	BaseClass::GatherConditions();
-
 }
 
 bool CHoundeye::IsValidCover(const Vector &vecCoverLocation, const CAI_Hint *pHint)
@@ -817,7 +853,7 @@ bool CHoundeye::IsValidCover(const Vector &vecCoverLocation, const CAI_Hint *pHi
 	{
 		AISquadIter_t iter;
 		CAI_BaseNPC *pSquadmate = GetSquad() ? GetSquad()->GetFirstMember(&iter) : NULL;
-		float SquadDistLimit = 192.0f;
+		float SquadDistLimit = 64.0f;
 		while (pSquadmate)
 		{
 			float SquadDist = (pSquadmate->GetAbsOrigin() - vecCoverLocation).Length();
@@ -925,6 +961,13 @@ int CHoundeye::TranslateSchedule(int scheduleType)
 		return SCHED_HOUNDEYE_RANGEATTACK1;
 		break;
 	}
+
+	case SCHED_HOUNDEYE_CHASE_ENEMY:
+	{
+		if (!OccupyStrategySlotRange(SQUAD_SLOT_HOUNDEYE_ATTACK1, SQUAD_SLOT_HOUNDEYE_ATTACK2))
+			return SCHED_HOUNDEYE_GROUP_RALLEY;
+		break;
+	}
 	}
 	return BaseClass::TranslateSchedule(scheduleType);
 }
@@ -953,16 +996,19 @@ void CHoundeye::BuildScheduleTestBits()
 		SetCustomInterruptCondition(COND_HOUNDEYE_SQUADMATE_FOUND_ENEMY);
 	}
 
-	if (IsCurSchedule(SCHED_HOUNDEYE_CHASE_ENEMY) && GetEnemy())
+	if (IsCurSchedule(SCHED_HOUNDEYE_CHASE_ENEMY))
 	{
-		trace_t tr;
-		AI_TraceHull(GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, 1),
-			GetHullMins(), GetHullMaxs(),
-			MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
-
-		if (EnemyDistance(GetEnemy()) < houndeye_attack_max_range.GetFloat() * .35 && !tr.startsolid)
+		if (GetEnemy())
 		{
-			SetCustomInterruptCondition(COND_CAN_RANGE_ATTACK1);
+			trace_t tr;
+			AI_TraceHull(GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, 1),
+				GetHullMins(), GetHullMaxs(),
+				MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+
+			if (EnemyDistance(GetEnemy()) < houndeye_attack_max_range.GetFloat() * .35 && !tr.startsolid)
+			{
+				SetCustomInterruptCondition(COND_CAN_RANGE_ATTACK1);
+			}
 		}
 	}
 }
@@ -996,10 +1042,10 @@ DEFINE_SCHEDULE
 SCHED_HOUNDEYE_CHASE_ENEMY,
 
 "	Tasks"
-"		TASK_STOP_MOVING				0"
+//"		TASK_STOP_MOVING				0"
 //"		TASK_SET_FAIL_SCHEDULE			SCHEDULE:SCHED_RUN_RANDOM"
-	"		TASK_SET_TOLERANCE_DISTANCE		32"
-"		TASK_GET_PATH_TO_ENEMY_LKP_LOS	0"
+"		TASK_SET_TOLERANCE_DISTANCE		64"
+"		TASK_GET_CHASE_PATH_TO_ENEMY	0"
 "		TASK_RUN_PATH					0"
 "		TASK_WAIT_FOR_MOVEMENT			0"
 "		TASK_FACE_ENEMY			0"
@@ -1099,7 +1145,8 @@ SCHED_HOUNDEYE_GROUP_RALLEY,
 "	Tasks"
 "		TASK_SET_TOLERANCE_DISTANCE		30"
 "		TASK_SET_FAIL_SCHEDULE			SCHEDULE:SCHED_CHASE_ENEMY"
-"		TASK_GET_PATH_TO_TARGET			0"
+//"		TASK_GET_PATH_TO_TARGET			0"
+"		TASK_GET_PATH_TO_ENEMY_LKP		0"
 "		TASK_RUN_PATH					0"
 "		TASK_WAIT_FOR_MOVEMENT			0"
 ""
