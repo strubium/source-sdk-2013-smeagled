@@ -126,6 +126,7 @@ public:
 
 	void SonicAttack(void);
 	bool IsAnyoneInSquadAttacking(void);
+	float GetNearbyAttackers(void);
 
 	void InputSonicAttack(inputdata_t &inputdata);
 
@@ -198,6 +199,8 @@ void CHoundeye::Precache(void)
 	m_hFootstep = PrecacheScriptSound("NPC_Houndeye.Footstep");
 
 	PrecacheParticleSystem("houndeye_sonicattack_ring");
+	PrecacheParticleSystem("houndeye_sonicattack_ring-squad");
+	PrecacheParticleSystem("houndeye_sonicattack_ring-squadfull");
 
 	PrecacheInstancedScene("scenes/npc/houndeye/houndeye_attack.vcd");
 	PrecacheInstancedScene("scenes/npc/houndeye/houndeye_blink.vcd");
@@ -271,35 +274,57 @@ void CHoundeye::SonicAttack(void)
 {
 	float		flAdjustedDamage;
 	float		flDist;
-	float		flRadius;
+
+	//Damage and radius is boosted by a max of 3 squadmates attacking nearby -- CJ
+	float NearbyAttackers = GetNearbyAttackers();
+	NearbyAttackers = clamp(NearbyAttackers, 0.0f, 3.0f);
+	float		flRadius = houndeye_attack_max_range.GetFloat();
+
+	flRadius += ((houndeye_attack_max_range.GetFloat() * 0.5f) * NearbyAttackers);
+
+	int red = 255 - (100 * NearbyAttackers);
+	int green = 255 - (60 * NearbyAttackers);
+	int blu = 255;
 
 	EmitSound("NPC_Houndeye.Sonic");
 
 	SetExpression("scenes/npc/houndeye/houndeye_attack.vcd");
+
+	if (m_pSquad && m_pSquad->NumMembers() > 3)
+	{
+		DispatchParticleEffect("houndeye_sonicattack_ring-squadfull", PATTACH_ROOTBONE_FOLLOW, this);
+	}
+	if (m_pSquad && m_pSquad->NumMembers() > 1)
+	{
+		DispatchParticleEffect("houndeye_sonicattack_ring-squad", PATTACH_ROOTBONE_FOLLOW, this);
+	}
+	else
+	{
+		DispatchParticleEffect("houndeye_sonicattack_ring", PATTACH_ROOTBONE_FOLLOW, this);
+	}
+	
 
 	// Old beam effect
 	CBroadcastRecipientFilter filter;
 	te->BeamRingPoint(filter, 0.0,
 		GetAbsOrigin(),							//origin
 		16,									//start radius
-		houndeye_attack_max_range.GetFloat(),									//end radius
+		flRadius,									//end radius
 		s_iSonicEffectTexture,				//texture
 		0,									//halo index
 		0,									//start frame
 		0,									//framerate
 		0.2,								//life
-		24,									//width
+		32,									//width
 		16,									//spread
 		0,									//amplitude
-		255,								//r
-		255,								//g
-		255,								//b
+		red,									//r
+		green,									//g
+		blu,								//b
 		192,								//a
 		0,									//speed
 		FBEAM_FADEOUT
 		);
-
-	DispatchParticleEffect("houndeye_sonicattack_ring", PATTACH_ROOTBONE_FOLLOW, this);
 
 	CBaseEntity* pEntity = NULL;
 	// iterate on all entities in the vicinity.
@@ -319,7 +344,8 @@ void CHoundeye::SonicAttack(void)
 				if (m_pSquad && m_pSquad->NumMembers() > 1)
 				{
 					// squad gets attack bonus.
-					flAdjustedDamage = sk_houndeye_dmg_blast.GetFloat() + sk_houndeye_dmg_blast.GetFloat() * (1.1 * (m_pSquad->NumMembers() - 1));
+
+					flAdjustedDamage = sk_houndeye_dmg_blast.GetFloat() + ((sk_houndeye_dmg_blast.GetFloat() * 0.5f) * NearbyAttackers);
 				}
 				else
 				{
@@ -330,7 +356,6 @@ void CHoundeye::SonicAttack(void)
 				flAdjustedDamage -= (flDist / houndeye_attack_max_range.GetFloat()) * flAdjustedDamage;
 
 				// Cief: Flip over distant antlions.	
-				flRadius = houndeye_attack_max_range.GetFloat();
 				trace_t tr;
 				if (FClassnameIs(pEntity, "npc_antlion"))
 				{
@@ -572,6 +597,31 @@ bool CHoundeye::IsAnyoneInSquadAttacking(void)
 	return false;
 }
 
+float CHoundeye::GetNearbyAttackers(void)
+{
+	if (!m_pSquad)
+	{
+		return 0;
+	}
+
+	float NumAttackers = 0;
+
+	//Checks if anyone in our squad is attacking already
+	AISquadIter_t iter;
+	for (CAI_BaseNPC *pSquadMember = m_pSquad->GetFirstMember(&iter); pSquadMember; pSquadMember = m_pSquad->GetNextMember(&iter))
+	{
+		if (pSquadMember == this)
+			continue;
+
+		float SquadDist = (pSquadMember->GetAbsOrigin() - GetAbsOrigin()).Length();
+		if (pSquadMember->IsCurSchedule(SCHED_HOUNDEYE_RANGEATTACK1) && SquadDist < houndeye_attack_max_range.GetFloat())
+		{
+			NumAttackers++;
+		}
+	}
+	return NumAttackers;
+}
+
 //=========================================================
 // RangeAttack1Conditions
 //=========================================================
@@ -736,7 +786,7 @@ int CHoundeye::SelectSchedule(void)
 		{
 			if (random->RandomInt(0, 3) > 2)
 			{
-				DevMsg("ow!\n");
+				//DevMsg("ow!\n");
 				return SCHED_HOUNDEYE_TAKE_COVER_FROM_ENEMY;
 			}
 		}
@@ -964,6 +1014,7 @@ int CHoundeye::TranslateSchedule(int scheduleType)
 
 	case SCHED_HOUNDEYE_CHASE_ENEMY:
 	{
+		//If we're not one of the first attackers, let's just do a los schedule so we can try to get a better flanking position etc. --CJ
 		if (!OccupyStrategySlotRange(SQUAD_SLOT_HOUNDEYE_ATTACK1, SQUAD_SLOT_HOUNDEYE_ATTACK2))
 			return SCHED_HOUNDEYE_GROUP_RALLEY;
 		break;
@@ -1000,12 +1051,7 @@ void CHoundeye::BuildScheduleTestBits()
 	{
 		if (GetEnemy())
 		{
-			trace_t tr;
-			AI_TraceHull(GetAbsOrigin(), GetAbsOrigin() + Vector(0, 0, 1),
-				GetHullMins(), GetHullMaxs(),
-				MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
-
-			if (EnemyDistance(GetEnemy()) < houndeye_attack_max_range.GetFloat() * .35 && !tr.startsolid)
+			if (EnemyDistance(GetEnemy()) <= houndeye_attack_max_range.GetFloat() * .6)
 			{
 				SetCustomInterruptCondition(COND_CAN_RANGE_ATTACK1);
 			}
