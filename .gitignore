@@ -95,4 +95,5 @@ sp/src/devtools/gcc9+support.o
 *.vpc_crc
 
 #Shadercompiler
-sp\src\devtools\bin\ShaderCompile.exe
+sp/src\devtools/bin/ShaderCompile.exe
+sp/src/devtools/bin/process_shaders.ps1
