@@ -1,7 +1,9 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//							Sonic dog
-//  
-//=============================================================================//
+//=============== Copyright Valve Corporation, All rights reserved. ==============//
+//							   Sonic dog / Eye creature
+//
+//  Ported and initially provided by Gmadador, further AI work by Comfort Jones,
+//	  extra features and tweaks by Dana Cief. Made for the Map Labs template.
+//===============================================================================//
 #include "cbase.h"
 #include "ai_default.h"
 #include "ai_task.h"
@@ -127,7 +129,8 @@ public:
 	void SonicAttack(void);
 	bool IsAnyoneInSquadAttacking(void);
 	float GetNearbyAttackers(void);
-
+		
+	//INPUTS
 	void InputSonicAttack(inputdata_t &inputdata);
 
 	void Event_Killed(const CTakeDamageInfo &info);
@@ -215,7 +218,7 @@ void CHoundeye::Spawn(void)
 
 	SetModel("models/houndeye.mdl");
 	BaseClass::Spawn();
-	SetHullType(HULL_WIDE_SHORT);
+	SetHullType(HULL_MEDIUM); //TODO: Look into a custom 48x48x48 hull in the future
 	SetHullSizeNormal();
 
 	SetSolid(SOLID_BBOX);
@@ -416,9 +419,8 @@ void CHoundeye::SonicAttack(void)
 				{
 					CTakeDamageInfo info(this, this, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB);
 					CalculateExplosiveDamageForce(&info, (pEntity->GetAbsOrigin() - GetAbsOrigin()), pEntity->GetAbsOrigin());
-
 					pEntity->TakeDamage(info);
-
+					
 					//UTIL_ViewPunch(EyePosition(), QAngle(random->RandomFloat(-5, 5), 0, random->RandomFloat(10, -10)), houndeye_attack_max_range.GetFloat(), false);
 					//UTIL_ScreenShake(EyePosition(), 10, 150.0, 1.0, houndeye_attack_max_range.GetFloat(), SHAKE_START);
 
