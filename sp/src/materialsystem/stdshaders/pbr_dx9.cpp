@@ -30,6 +30,7 @@ const Sampler_t SAMPLER_MRAO = SHADER_SAMPLER10;
 const Sampler_t SAMPLER_MRAO2 = SHADER_SAMPLER13;
 const Sampler_t SAMPLER_EMISSIVE = SHADER_SAMPLER11;
 const Sampler_t SAMPLER_EMISSIVE2 = SHADER_SAMPLER14;
+const Sampler_t SAMPLER_DETAIL = SHADER_SAMPLER15;
 
 // Convars
 static ConVar mat_fullbright("mat_fullbright", "0", FCVAR_CHEAT);
@@ -45,30 +46,57 @@ struct PBR_Vars_t
         memset(this, 0xFF, sizeof(*this));
     }
 
-    int baseTexture;
-    int baseTexture2;
-    int baseColor;
-    int normalTexture;
-    int bumpMap;
-    int bumpMap2;
-    int envMap;
-    int baseTextureFrame;
-    int baseTextureFrame2;
-    int baseTextureTransform;
-    int useParallax;
-    int parallaxDepth;
-    int parallaxCenter;
-    int alphaTestReference;
-    int flashlightTexture;
-    int flashlightTextureFrame;
-    int emissionTexture;
-    int emissionTexture2;
-    int mraoTexture;
-    int mraoTexture2;
-    int emissionScale;
-    int emissionScale2;
-    int hsv;
-    int hsv_blend;
+    int BaseTexture;
+    int BaseTexture2;
+    int BaseColor;
+    int NormalTexture;
+    int BumpMap;
+    int BumpMap2;
+    int EnvMap;
+
+    int BaseTextureTransform;
+    int UseParallax;
+    int ParallaxDepth;
+    int ParallaxCenter;
+    int AlphaTestReference;
+    int FlashlightTexture;
+    int FlashlightTextureFrame;
+    int EmissionTexture;
+    int EmissionTexture2;
+	int LightmapTexture;
+    int MRAOTexture;
+    int MRAOTexture2;
+    int EmissionScale;
+    int EmissionScale2;
+	int HSV;
+	int HSV_blend;
+
+	// PCC Implementation
+	int EnvmapParallax;
+	int EnvMapParallaxOBB1;
+	int EnvMapParallaxOBB2;
+	int EnvMapParallaxOBB3;
+	int EnvmapOrigin;
+
+	// Tint, Contrast and Saturation Parameters
+	int EnvMapContrast;
+	int EnvMapSaturation;
+	int	EnvMapTint;
+
+	// Frames
+	int BaseTextureFrame;
+	int BaseTextureFrame2;
+	int DetailFrame;
+	int BumpFrame;
+
+	// Detailtexture implementation
+	//int DetailTexture;
+	//int DetailBlendMode;
+	//int DetailBlendFactor;
+	//int DetailTransform;
+	//int DetailScale;
+	//int DetailTint;
+
 };
 
 // Beginning the shader
@@ -86,7 +114,9 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         SHADER_PARAM(EMISSIONTEXTURE2, SHADER_PARAM_TYPE_TEXTURE, "", "Emission texture");
         SHADER_PARAM(NORMALTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Normal texture (deprecated, use $bumpmap)");
         SHADER_PARAM(BUMPMAP, SHADER_PARAM_TYPE_TEXTURE, "", "Normal texture");
+		SHADER_PARAM(BUMPFRAME, SHADER_PARAM_TYPE_INTEGER, "", "frame number for $bumpmap/$normaltexture");
         SHADER_PARAM(BUMPMAP2, SHADER_PARAM_TYPE_TEXTURE, "", "Normal texture");
+		SHADER_PARAM(LIGHTMAP, SHADER_PARAM_TYPE_TEXTURE, "", "In MP this gets set automatically if your model has a lightmap, in SP you have to do it yourself.");
         SHADER_PARAM(PARALLAX, SHADER_PARAM_TYPE_BOOL, "0", "Use Parallax Occlusion Mapping.");
         SHADER_PARAM(PARALLAXDEPTH, SHADER_PARAM_TYPE_FLOAT, "0.0030", "Depth of the Parallax Map");
         SHADER_PARAM(PARALLAXCENTER, SHADER_PARAM_TYPE_FLOAT, "0.5", "Center depth of the Parallax Map");
@@ -94,57 +124,113 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         SHADER_PARAM(EMISSIONSCALE2, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Color to multiply emission texture with");
         SHADER_PARAM(HSV, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "HSV color to transform $basetexture texture with");
         SHADER_PARAM(HSV_BLEND, SHADER_PARAM_TYPE_BOOL, "0", "Blend untransformed color and HSV transformed color");
+
+		// Detail textures
+		//SHADER_PARAM(DETAIL, SHADER_PARAM_TYPE_TEXTURE, "", "Texture");
+		//SHADER_PARAM(DETAILTEXTURETRANSFORM, SHADER_PARAM_TYPE_MATRIX, "center .5 .5 scale 1 1 rotate 0 translate 0 0", "$detail & $detail2 texcoord transform");
+		//SHADER_PARAM(DETAILFRAME, SHADER_PARAM_TYPE_INTEGER, "0", "frame number for $detail");
+		//SHADER_PARAM(DETAILSCALE, SHADER_PARAM_TYPE_FLOAT, "4", "scale of the detail texture");
+		//SHADER_PARAM(DETAILTINT, SHADER_PARAM_TYPE_COLOR, "", "Tints $Detail");
+		//SHADER_PARAM(DETAILBLENDMODE, SHADER_PARAM_TYPE_INTEGER, "0", "Check VDC for more information");
+		//SHADER_PARAM(DETAILBLENDFACTOR, SHADER_PARAM_TYPE_FLOAT, "", "How much detail is it that you want?");
+
+		// Envmapping parameters
+		SHADER_PARAM(ENVMAPTINT, SHADER_PARAM_TYPE_COLOR, "", "Tints the $envmap");
+		SHADER_PARAM(ENVMAPCONTRAST, SHADER_PARAM_TYPE_FLOAT, "", "0-1 where 1 is full contrast and 0 is pure cubemap");
+		SHADER_PARAM(ENVMAPSATURATION, SHADER_PARAM_TYPE_FLOAT, "", "0-1 where 1 is default pure cubemap and 0 is b/w.");
+
+		// Parallax Corrected Cubemaps
+		SHADER_PARAM(ENVMAPPARALLAX, SHADER_PARAM_TYPE_INTEGER, "0", "Enables parallax correction code for env_cubemaps");
+		SHADER_PARAM(ENVMAPPARALLAXOBB1, SHADER_PARAM_TYPE_VEC4, "[1 0 0 0]", "The first line of the parallax correction OBB matrix");
+		SHADER_PARAM(ENVMAPPARALLAXOBB2, SHADER_PARAM_TYPE_VEC4, "[0 1 0 0]", "The second line of the parallax correction OBB matrix");
+		SHADER_PARAM(ENVMAPPARALLAXOBB3, SHADER_PARAM_TYPE_VEC4, "[0 0 1 0]", "The third line of the parallax correction OBB matrix");
+		SHADER_PARAM(ENVMAPORIGIN, SHADER_PARAM_TYPE_VEC3, "[0 0 0]", "The world space position of the env_cubemap being corrected");
+
     END_SHADER_PARAMS;
 
     // Setting up variables for this shader
     void SetupVars(IMaterialVar **params, PBR_Vars_t &info)
     {
-        info.baseTexture = BASETEXTURE;
-        info.baseTexture2 = BASETEXTURE2;
-        info.baseColor = IS_FLAG_SET(MATERIAL_VAR_MODEL) ? COLOR2 : COLOR;
-        info.normalTexture = NORMALTEXTURE;
-        info.bumpMap = BUMPMAP;
-        info.bumpMap2 = BUMPMAP2;
-        info.baseTextureFrame = FRAME;
-        info.baseTextureFrame2 = FRAME2;
-        info.baseTextureTransform = BASETEXTURETRANSFORM;
-        info.alphaTestReference = ALPHATESTREFERENCE;
-        info.flashlightTexture = FLASHLIGHTTEXTURE;
-        info.flashlightTextureFrame = FLASHLIGHTTEXTUREFRAME;
-        info.envMap = ENVMAP;
-        info.emissionTexture = EMISSIONTEXTURE;
-        info.emissionTexture2 = EMISSIONTEXTURE2;
-        info.mraoTexture = MRAOTEXTURE;
-        info.mraoTexture2 = MRAOTEXTURE2;
-        info.useParallax = PARALLAX;
-        info.parallaxDepth = PARALLAXDEPTH;
-        info.parallaxCenter = PARALLAXCENTER;
-        info.emissionScale = EMISSIONSCALE;
-        info.emissionScale2 = EMISSIONSCALE2;
-        info.hsv = HSV;
-        info.hsv_blend = HSV_BLEND;
+        info.BaseTexture = BASETEXTURE;
+        info.BaseTexture2 = BASETEXTURE2;
+        info.BaseColor = IS_FLAG_SET(MATERIAL_VAR_MODEL) ? COLOR2 : COLOR;
+        info.NormalTexture = NORMALTEXTURE;
+        info.BumpMap = BUMPMAP;
+        info.BumpMap2 = BUMPMAP2;
+		info.LightmapTexture = LIGHTMAP; // Model lightmapping
+        info.BaseTextureFrame = FRAME;
+        info.BaseTextureFrame2 = FRAME2;
+        info.BaseTextureTransform = BASETEXTURETRANSFORM;
+        info.AlphaTestReference = ALPHATESTREFERENCE;
+        info.FlashlightTexture = FLASHLIGHTTEXTURE;
+        info.FlashlightTextureFrame = FLASHLIGHTTEXTUREFRAME;
+        info.EnvMap = ENVMAP;
+        info.EmissionTexture = EMISSIONTEXTURE;
+        info.EmissionTexture2 = EMISSIONTEXTURE2;
+        info.MRAOTexture = MRAOTEXTURE;
+        info.MRAOTexture2 = MRAOTEXTURE2;
+        info.UseParallax = PARALLAX;
+        info.ParallaxDepth = PARALLAXDEPTH;
+        info.ParallaxCenter = PARALLAXCENTER;
+        info.EmissionScale = EMISSIONSCALE;
+        info.EmissionScale2 = EMISSIONSCALE2;
+        info.HSV = HSV;
+        info.HSV_blend = HSV_BLEND;
+
+		info.BumpFrame = BUMPFRAME;
+
+		// Detail textures...
+		//info.DetailTexture = DETAIL;
+		//info.DetailTransform = DETAILTEXTURETRANSFORM;
+		//info.DetailFrame = DETAILFRAME;
+		//info.DetailScale = DETAILSCALE;
+		//info.DetailTint = DETAILTINT;
+		//info.DetailBlendMode = DETAILBLENDMODE;
+		//info.DetailBlendFactor = DETAILBLENDFACTOR;
+
+		// Envmapping...
+		info.EnvMapTint = ENVMAPTINT;
+		info.EnvMapContrast = ENVMAPCONTRAST;
+		info.EnvMapSaturation = ENVMAPSATURATION;
+
+		// Parallax Corrected Cubemaps...
+		info.EnvmapParallax = ENVMAPPARALLAX;
+		info.EnvMapParallaxOBB1 = ENVMAPPARALLAXOBB1;
+		info.EnvMapParallaxOBB2 = ENVMAPPARALLAXOBB2;
+		info.EnvMapParallaxOBB3 = ENVMAPPARALLAXOBB3;
+		info.EnvmapOrigin = ENVMAPORIGIN;
     };
 
     // Initializing parameters
     SHADER_INIT_PARAMS()
     {
+
+		// WRD: There used to be a fallback that would put the string from $normaltexture to $bumpmap.
+		//		However I inverted this for model lightmapping support ( and for the future )
+		//		In SDK2013mp, which Map Labs/Base is yet* not using, the engine will disable model lightmaps-
+		//		if you have $bumpmap or $phong. So we set whatever $bumpmap is to $normaltexture and then undefine it
+		//		which allows you to use $bumpmap for model lightmapping.
+
         // Fallback for changed parameter
-        if (params[NORMALTEXTURE]->IsDefined())
-            params[BUMPMAP]->SetStringValue(params[NORMALTEXTURE]->GetStringValue());
+		if (params[BUMPMAP]->IsDefined())
+		{
+			params[NORMALTEXTURE]->SetStringValue(params[BUMPMAP]->GetStringValue());
+			params[BUMPMAP]->SetUndefined(); // extremely important for model lightmaps to work with $bumpmap
+		}
 
         // Dynamic lights need a bumpmap
-        if (!params[BUMPMAP]->IsDefined())
-            params[BUMPMAP]->SetStringValue("dev/flat_normal");
+		// WRD : these checks are not required, Shaderdraw checks for whether or not its a texture, if not it will bind a default engine one.
+        //	if (!params[NORMALTEXTURE]->IsDefined())
+        //  params[NORMALTEXTURE]->SetStringValue("dev/flat_normal");
+		//	if (!params[BUMPMAP2]->IsDefined())
+		//	params[BUMPMAP2]->SetStringValue("dev/flat_normal");
 
-        if (!params[BUMPMAP2]->IsDefined())
-            params[BUMPMAP2]->SetStringValue( "dev/flat_normal" );
+		if (!params[MRAOTEXTURE2]->IsDefined())
+			params[MRAOTEXTURE2]->SetStringValue("dev/pbr_mraotexture");
 
         // Set a good default mrao texture
         if (!params[MRAOTEXTURE]->IsDefined())
             params[MRAOTEXTURE]->SetStringValue("dev/pbr_mraotexture");
-
-        if (!params[MRAOTEXTURE2]->IsDefined())
-            params[MRAOTEXTURE2]->SetStringValue( "dev/pbr_mraotexture" );
 
         // PBR relies heavily on envmaps
         if (!params[ENVMAP]->IsDefined())
@@ -168,45 +254,64 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
     };
 
     SHADER_INIT
-    {
-        PBR_Vars_t info;
-        SetupVars(params, info);
+	{
+		PBR_Vars_t info;
+		SetupVars(params, info);
 
-        Assert(info.flashlightTexture >= 0);
-        LoadTexture(info.flashlightTexture, TEXTUREFLAGS_SRGB);
+		// WRD: This texture should always exist. If it isn't then something else is SERIOUSLY wrong!
+		LoadTexture(info.FlashlightTexture, TEXTUREFLAGS_SRGB);
 
-        Assert(info.bumpMap >= 0);
-        LoadBumpMap(info.bumpMap);
+		if (params[NORMALTEXTURE]->IsDefined())
+		{
+			LoadBumpMap(info.NormalTexture);
+		}
 
-        Assert(info.bumpMap2 >= 0);
-        LoadBumpMap(info.bumpMap2);
+		if (params[BUMPMAP2]->IsDefined())
+		{
+			LoadBumpMap(info.BumpMap2);
+		}
 
-        Assert(info.envMap >= 0);
-        int envMapFlags = g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE ? TEXTUREFLAGS_SRGB : 0;
-        envMapFlags |= TEXTUREFLAGS_ALL_MIPS;
-        LoadCubeMap(info.envMap, envMapFlags);
+		int envMapFlags = g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE ? TEXTUREFLAGS_SRGB : 0;
+		// WRD: This does NOT work. If any other material before the pbr one loads the envmap WITHOUT this flag, then loading it again here will NOT add it.
+		//		As a workaround, you can manually flag your cubemaps with the 'No Minimum Mipmap" flag to force this behaviour.
+		envMapFlags |= TEXTUREFLAGS_ALL_MIPS;
+		LoadCubeMap(info.EnvMap, envMapFlags);
 
-        if (info.emissionTexture >= 0 && params[EMISSIONTEXTURE]->IsDefined())
-            LoadTexture(info.emissionTexture, TEXTUREFLAGS_SRGB);
+		// WRD I removed the >= 0 checks because they won't do anything.
+		// Note : all the previous branching didn't check it either so why should these textures work differently?
+		if (params[EMISSIONTEXTURE]->IsDefined())
+			LoadTexture(info.EmissionTexture, TEXTUREFLAGS_SRGB);
 
-        if (info.emissionTexture2 >= 0 && params[EMISSIONTEXTURE2]->IsDefined())
-            LoadTexture(info.emissionTexture2, TEXTUREFLAGS_SRGB);
+		if (params[EMISSIONTEXTURE2]->IsDefined())
+			LoadTexture(info.EmissionTexture2, TEXTUREFLAGS_SRGB);
 
-        Assert(info.mraoTexture >= 0);
-        LoadTexture(info.mraoTexture, 0);
+		Assert(info.MRAOTexture >= 0);
+		LoadTexture(info.MRAOTexture, 0);
 
-        Assert(info.mraoTexture2 >= 0);
-        LoadTexture(info.mraoTexture2, 0);
+		Assert(info.MRAOTexture2 >= 0);
+		LoadTexture(info.MRAOTexture2, 0);
 
-        if (params[info.baseTexture]->IsDefined())
-        {
-            LoadTexture(info.baseTexture, TEXTUREFLAGS_SRGB);
-        }
+		if (params[info.BaseTexture]->IsDefined())
+		{
+			LoadTexture(info.BaseTexture, TEXTUREFLAGS_SRGB);
+		}
 
-        if (params[info.baseTexture2]->IsDefined())
-        {
-            LoadTexture(info.baseTexture2, TEXTUREFLAGS_SRGB);
-        }
+		if (params[info.BaseTexture2]->IsDefined())
+		{
+			LoadTexture(info.BaseTexture2, TEXTUREFLAGS_SRGB);
+		}
+
+		//if (params[info.DetailTexture]->IsDefined())
+		//{
+			//if (params[info.DetailBlendMode]->GetIntValue() > 0)
+			//{
+			//	LoadTexture(info.DetailTexture, 0);
+			//}
+			//else
+			//{
+			//	LoadTexture(info.DetailTexture, TEXTUREFLAGS_SRGB); // when mod2x, load as sRGB
+			//}
+		//}
 
         if (IS_FLAG_SET(MATERIAL_VAR_MODEL)) // Set material var2 flags specific to models
         {
@@ -229,30 +334,56 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
 
     // Drawing the shader
     SHADER_DRAW
-    {
-        PBR_Vars_t info;
-        SetupVars(params, info);
+	{
+		PBR_Vars_t info;
+		SetupVars(params, info);
 
-        // Setting up booleans
-        bool bHasBaseTexture = (info.baseTexture != -1) && params[info.baseTexture]->IsTexture();
-        bool bIsWVT = (info.baseTexture2 != -1) && params[info.baseTexture2]->IsTexture();
-        bool bHasNormalTexture = (info.bumpMap != -1) && params[info.bumpMap]->IsTexture();
-        bool bHasNormalTexture2 = (info.bumpMap2 != -1) && params[info.bumpMap2]->IsTexture();
-        bool bHasMraoTexture = (info.mraoTexture != -1) && params[info.mraoTexture]->IsTexture();
-        bool bHasMraoTexture2 = (info.mraoTexture2 != -1) && params[info.mraoTexture2]->IsTexture();
-        bool bHasEmissionTexture = (info.emissionTexture != -1) && params[info.emissionTexture]->IsTexture();
-        bool bHasEmissionTexture2 = (info.emissionTexture2 != -1) && params[info.emissionTexture2]->IsTexture();
-        bool bHasEnvTexture = (info.envMap != -1) && params[info.envMap]->IsTexture();
-        bool bIsAlphaTested = IS_FLAG_SET(MATERIAL_VAR_ALPHATEST) != 0;
-        bool bHasFlashlight = UsingFlashlight(params);
-        bool bLightMapped = !IS_FLAG_SET(MATERIAL_VAR_MODEL);
-        bool bHasEmissionScale = (info.emissionScale != -1) && params[info.emissionScale]->IsDefined();
-        bool bHasEmissionScale2 = (info.emissionScale2 != -1) && params[info.emissionScale2]->IsDefined();
-        bool bHasHSV = (info.hsv != -1) && params[info.hsv]->IsDefined();
-        bool bBlendHSV = bHasHSV && IsBoolSet(info.hsv_blend, params);
+		// Setting up booleans
+		// WRD : I removed all the != -1, because this will ALWAYS return true!
+		//		 ->IsDefined() also does this from time to time, so I replaced those with != defaultvalue, when applicable
+		bool bIsAlphaTested = IS_FLAG_SET(MATERIAL_VAR_ALPHATEST) != 0;
+		bool bIsModel = IS_FLAG_SET(MATERIAL_VAR_MODEL);
+		bool bBrush = !bIsModel; // If its not a model, its a brush... or a displacement
+
+		bool bLightmappedModel = params[info.LightmapTexture]->IsTexture() && bIsModel;
+		bool bHasBaseTexture = params[info.BaseTexture]->IsTexture();
+		bool bIsWVT = params[info.BaseTexture2]->IsTexture();
+
+		// WRD: We define them as false first so we can check them ONLY if bIsWVT is set.
+		bool bHasNormalTexture2 = false;
+		bool bHasMraoTexture2 = false;
+		bool bHasEmissionTexture2 = false;
+		bool bHasEmissionScale2 = false;
+
+		bool bHasHSV = (info.HSV != -1) && params[info.HSV]->IsDefined();
+		bool bBlendHSV = bHasHSV && IsBoolSet(info.HSV_blend, params);
+		bool bHasParallaxCorrection = params[info.EnvmapParallax]->GetIntValue() != 0;
+
+		// WRD: Don't bother checking for Texture2's if you aren't on WVT, waste of effort
+		if (bIsWVT)
+		{
+			// Had to skip this in order to save a PSREG for PCC
+			bHasParallaxCorrection = false;
+			bHasNormalTexture2 = params[info.BumpMap2]->IsTexture();
+			bHasEmissionTexture2 = params[info.EmissionTexture2]->IsTexture();
+			bHasMraoTexture2 = params[info.MRAOTexture2]->IsTexture();
+			bHasEmissionScale2 = params[info.EmissionScale2]->IsDefined();
+		}
+
+		bool bHasNormalTexture = params[info.NormalTexture]->IsTexture();
+		bool bHasMraoTexture = params[info.MRAOTexture]->IsTexture();
+		bool bHasEmissionTexture = params[info.EmissionTexture]->IsTexture();
+		bool bHasEnvTexture = params[info.EnvMap]->IsTexture();
+		//bool bHasDetailTexture = params[info.DetailTexture]->IsTexture();
+		bool bHasFlashlight = UsingFlashlight(params);
+		bool bHasEmissionScale = params[info.EmissionScale]->IsDefined();
+		bool bHasParallax = params[info.UseParallax]->GetIntValue() != 0;
+
+		// I'd rather check this once per shader instance than multiple times per shader instance...
+		bool bSupportsSM30 = g_pHardwareConfig->SupportsShaderModel_3_0();
 
         // Determining whether we're dealing with a fully opaque material
-        BlendType_t nBlendType = EvaluateBlendRequirements(info.baseTexture, true);
+        BlendType_t nBlendType = EvaluateBlendRequirements(info.BaseTexture, true);
         bool bFullyOpaque = (nBlendType != BT_BLENDADD) && (nBlendType != BT_BLEND) && !bIsAlphaTested;
 
         if (IsSnapshotting())
@@ -260,9 +391,9 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             // If alphatest is on, enable it
             pShaderShadow->EnableAlphaTest(bIsAlphaTested);
 
-            if (info.alphaTestReference != -1 && params[info.alphaTestReference]->GetFloatValue() > 0.0f)
+            if (info.AlphaTestReference != -1 && params[info.AlphaTestReference]->GetFloatValue() > 0.0f)
             {
-                pShaderShadow->AlphaFunc(SHADER_ALPHAFUNC_GEQUAL, params[info.alphaTestReference]->GetFloatValue());
+                pShaderShadow->AlphaFunc(SHADER_ALPHAFUNC_GEQUAL, params[info.AlphaTestReference]->GetFloatValue());
             }
 
             if (bHasFlashlight )
@@ -272,7 +403,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             }
             else
             {
-                SetDefaultBlendingShadowState(info.baseTexture, true);
+                SetDefaultBlendingShadowState(info.BaseTexture, true);
             }
 
             int nShadowFilterMode = bHasFlashlight ? g_pHardwareConfig->GetShadowFilterMode() : 0;
@@ -288,6 +419,19 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             pShaderShadow->EnableSRGBRead(SAMPLER_MRAO, false);         // MRAO isn't sRGB
             pShaderShadow->EnableTexture(SAMPLER_NORMAL, true);         // Normal texture
             pShaderShadow->EnableSRGBRead(SAMPLER_NORMAL, false);       // Normals aren't sRGB
+
+			//if (bHasDetailTexture)
+			//pShaderShadow->EnableTexture(SAMPLER_DETAIL, true);			// Detail texture
+			//{
+			//	if (params[info.DetailBlendMode]->GetIntValue() > 0)
+			//	{
+			//		pShaderShadow->EnableSRGBRead(SAMPLER_DETAIL, false);		// WRD: Must be sRGB as valve does that ( consistency )
+			//	}
+			//	else
+			//	{
+			//		pShaderShadow->EnableSRGBRead(SAMPLER_DETAIL, true);		// WRD: Must be sRGB as valve does that ( consistency )
+			//	}
+			//}
 
             if (bIsWVT)
             {
@@ -310,7 +454,13 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 pShaderShadow->EnableTexture(SAMPLER_RANDOMROTATION, true);     // Noise map
                 pShaderShadow->EnableTexture(SAMPLER_FLASHLIGHT, true);         // Flashlight cookie
                 pShaderShadow->EnableSRGBRead(SAMPLER_FLASHLIGHT, true);
+
+				FogToBlack();
             }
+			else
+			{
+				DefaultFog();
+			}
 
             // Setting up envmap
             if (bHasEnvTexture)
@@ -344,13 +494,12 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 pShaderShadow->VertexShaderVertexFormat(flags, 3, 0, 0);
             }
 
-            int useParallax = params[info.useParallax]->GetIntValue();
             if (!mat_pbr_parallaxmap.GetBool())
             {
-                useParallax = 0;
+				bHasParallax = false;
             }
 			
-            if (!g_pHardwareConfig->SupportsShaderModel_3_0() || mat_pbr_force_20b.GetBool())
+			if (!bSupportsSM30 || mat_pbr_force_20b.GetBool())
             {
                 // Setting up static vertex shader
                 DECLARE_STATIC_VERTEX_SHADER(pbr_vs20b);
@@ -361,11 +510,11 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 DECLARE_STATIC_PIXEL_SHADER(pbr_ps20b);
                 SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHT, bHasFlashlight);
                 SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode);
-                SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
+                SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bBrush);
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
                 SET_STATIC_PIXEL_SHADER_COMBO(WVT, bIsWVT);
-                SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
-                SET_STATIC_PIXEL_SHADER_COMBO(HSV_BLEND, bBlendHSV);
+				SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
+				SET_STATIC_PIXEL_SHADER_COMBO(HSV_BLEND, bBlendHSV);
                 SET_STATIC_PIXEL_SHADER(pbr_ps20b);
             }
             else
@@ -379,17 +528,15 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 DECLARE_STATIC_PIXEL_SHADER(pbr_ps30);
                 SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHT, bHasFlashlight);
                 SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode);
-                SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
+                SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bBrush);
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
-                SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXOCCLUSION, useParallax);
+				SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXOCCLUSION, bHasParallax);
                 SET_STATIC_PIXEL_SHADER_COMBO(WVT, bIsWVT);
-                SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
-                SET_STATIC_PIXEL_SHADER_COMBO(HSV_BLEND, bBlendHSV);
+				SET_STATIC_PIXEL_SHADER_COMBO(PCC, bHasParallaxCorrection);
+				SET_STATIC_PIXEL_SHADER_COMBO(HSV, bHasHSV);
+				SET_STATIC_PIXEL_SHADER_COMBO(HSV_BLEND, bBlendHSV);
                 SET_STATIC_PIXEL_SHADER(pbr_ps30);
             }
-
-            // Setting up fog
-            DefaultFog(); // I think this is correct
 
             // HACK HACK HACK - enable alpha writes all the time so that we have them for underwater stuff
             pShaderShadow->EnableAlphaWrites(bFullyOpaque);
@@ -401,62 +548,65 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             // Setting up albedo texture
             if (bHasBaseTexture)
             {
-                BindTexture(SAMPLER_BASETEXTURE, info.baseTexture, info.baseTextureFrame);
+                BindTexture(SAMPLER_BASETEXTURE, info.BaseTexture, info.BaseTextureFrame);
             }
             else
             {
                 pShaderAPI->BindStandardTexture(SAMPLER_BASETEXTURE, TEXTURE_GREY);
             }
 
-            // Setting up basecolor tint
-            Vector4D hsv;
-            if (bHasHSV)
-            {
-                params[info.hsv]->GetVecValue(hsv.Base(), 3);
-                hsv.w = pShaderAPI->GetLightMapScaleFactor();
-            }
-            else
-            {
-                hsv.Init(1.0f, 1.0f, 1.0f, pShaderAPI->GetLightMapScaleFactor() );
-            }
-            pShaderAPI->SetPixelShaderConstant(PSREG_SELFILLUMTINT, hsv.Base());
+			// Setting up basecolor tint
+			Vector4D HSV;
+			if (bHasHSV)
+			{
+				params[info.HSV]->GetVecValue(HSV.Base(), 3);
+				HSV.w = pShaderAPI->GetLightMapScaleFactor();
+			}
+			else
+			{
+				HSV.Init(1.0f, 1.0f, 1.0f, pShaderAPI->GetLightMapScaleFactor());
+			}
+			pShaderAPI->SetPixelShaderConstant(PSREG_SELFILLUMTINT, HSV.Base());
 
             // Setting up emission scale
-            Vector emissionScale;
+            Vector EmissionScale;
             if (bHasEmissionScale)
             {
-                params[info.emissionScale]->GetVecValue(emissionScale.Base(), 3);
+                params[info.EmissionScale]->GetVecValue(EmissionScale.Base(), 3);
             }
             else
             {
-                emissionScale.Init(1.0f, 1.0f, 1.0f);
+                EmissionScale.Init(1.0f, 1.0f, 1.0f);
             }
-            pShaderAPI->SetPixelShaderConstant(2, emissionScale.Base());
+            pShaderAPI->SetPixelShaderConstant(2, EmissionScale.Base());
 
             // Setting up environment map
             if (bHasEnvTexture)
             {
-                BindTexture(SAMPLER_ENVMAP, info.envMap, 0);
+                BindTexture(SAMPLER_ENVMAP, info.EnvMap, 0);
             }
             else
             {
                 pShaderAPI->BindStandardTexture(SAMPLER_ENVMAP, TEXTURE_BLACK);
             }
 
+			//if (bHasDetailTexture)
+			//{
+			//	//DevMsg("Detail Texture Set \n");
+			//	BindTexture(SHADER_SAMPLER15, info.DetailTexture, 0);
+			//}
+
             // Setting up emissive texture
             if (bHasEmissionTexture)
             {
-                BindTexture(SAMPLER_EMISSIVE, info.emissionTexture, 0);
+                BindTexture(SAMPLER_EMISSIVE, info.EmissionTexture, 0);
             }
-            else
-            {
-                pShaderAPI->BindStandardTexture(SAMPLER_EMISSIVE, TEXTURE_BLACK);
-            }
+			// This USED TO bind a default black texture, however the shader has a static for Emissiontexture, so if there is no emissiontexture, it can't use one either.
 
             // Setting up normal map
             if (bHasNormalTexture)
             {
-                BindTexture(SAMPLER_NORMAL, info.bumpMap, 0);
+				BindTexture(SAMPLER_NORMAL, info.NormalTexture, info.BumpFrame);
             }
             else
             {
@@ -466,7 +616,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             // Setting up mrao map
             if (bHasMraoTexture)
             {
-                BindTexture(SAMPLER_MRAO, info.mraoTexture, 0);
+                BindTexture(SAMPLER_MRAO, info.MRAOTexture, 0);
             }
             else
             {
@@ -475,48 +625,41 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
 
             if (bIsWVT)
             {
-                BindTexture(SAMPLER_BASETEXTURE2, info.baseTexture2, info.baseTextureFrame2);
+                BindTexture(SAMPLER_BASETEXTURE2, info.BaseTexture2, info.BaseTextureFrame2);
 
                 if (bHasEmissionTexture2)
-                    BindTexture(SAMPLER_EMISSIVE2, info.emissionTexture2, 0);
+                    BindTexture(SAMPLER_EMISSIVE2, info.EmissionTexture2, 0);
                 else
                     pShaderAPI->BindStandardTexture(SAMPLER_EMISSIVE2, TEXTURE_BLACK);
 
                 if (bHasNormalTexture2)
-                    BindTexture(SAMPLER_NORMAL2, info.bumpMap2, 0);
+                    BindTexture(SAMPLER_NORMAL2, info.BumpMap2, 0);
                 else
                     pShaderAPI->BindStandardTexture(SAMPLER_NORMAL2, TEXTURE_NORMALMAP_FLAT);
 
                 if (bHasMraoTexture2)
-                    BindTexture(SAMPLER_MRAO2, info.mraoTexture2, 0);
+                    BindTexture(SAMPLER_MRAO2, info.MRAOTexture2, 0);
                 else
                     pShaderAPI->BindStandardTexture(SAMPLER_MRAO2, TEXTURE_WHITE);
 
                 if (bHasEmissionScale2)
-                    params[info.emissionScale2]->GetVecValue(emissionScale.Base(), 3);
+                    params[info.EmissionScale2]->GetVecValue(EmissionScale.Base(), 3);
                 else
-                    emissionScale.Init(1.0f, 1.0f, 1.0f);
-                pShaderAPI->SetPixelShaderConstant(3, emissionScale.Base());
+                    EmissionScale.Init(1.0f, 1.0f, 1.0f);
+                pShaderAPI->SetPixelShaderConstant(3, EmissionScale.Base());
             }
 
             // Getting the light state
             LightState_t lightState;
             pShaderAPI->GetDX9LightState(&lightState);
 
-            // Brushes don't need ambient cubes or dynamic lights
-            if (!IS_FLAG_SET(MATERIAL_VAR_MODEL))
-            {
-                lightState.m_bAmbientLight = false;
-                lightState.m_nNumLights = 0;
-            }
-
             // Setting up the flashlight related textures and variables
             bool bFlashlightShadows = false;
             if (bHasFlashlight)
             {
-                Assert(info.flashlightTexture >= 0 && info.flashlightTextureFrame >= 0);
-                Assert(params[info.flashlightTexture]->IsTexture());
-                BindTexture(SAMPLER_FLASHLIGHT, info.flashlightTexture, info.flashlightTextureFrame);
+                Assert(info.FlashlightTexture >= 0 && info.FlashlightTextureFrame >= 0);
+                Assert(params[info.FlashlightTexture]->IsTexture());
+                BindTexture(SAMPLER_FLASHLIGHT, info.FlashlightTexture, info.FlashlightTextureFrame);
                 VMatrix worldToTexture;
                 ITexture *pFlashlightDepthTexture;
                 FlashlightState_t state = pShaderAPI->GetFlashlightStateEx(worldToTexture, &pFlashlightDepthTexture);
@@ -554,7 +697,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
 
             // Determining the max level of detail for the envmap
             int iEnvMapLOD = 6;
-            auto envTexture = params[info.envMap]->GetTextureValue();
+            auto envTexture = params[info.EnvMap]->GetTextureValue();
             if (envTexture)
             {
                 // Get power of 2 of texture width
@@ -568,6 +711,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             }
 
             // Dealing with very high and low resolution cubemaps
+			// WRD : Note, this only works when the cubemap is flagged to have all mips OR if you run the game with -forceallmips
             if (iEnvMapLOD > 12)
                 iEnvMapLOD = 12;
             if (iEnvMapLOD < 4)
@@ -575,12 +719,25 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
 
             // This has some spare space
             vEyePos_SpecExponent[3] = iEnvMapLOD;
-            pShaderAPI->SetPixelShaderConstant(PSREG_EYEPOS_SPEC_EXPONENT, vEyePos_SpecExponent, 1);
+            pShaderAPI->SetPixelShaderConstant(PSREG_EYEPOS_SPEC_EXPONENT, vEyePos_SpecExponent, 1); // c11
 
             // Setting lightmap texture
-            s_pShaderAPI->BindStandardTexture(SAMPLER_LIGHTMAP, TEXTURE_LIGHTMAP_BUMPED);
+			if (bBrush)
+			{
+				// Brushes don't need ambient cubes or dynamic lights
+				lightState.m_bAmbientLight = false;
+				lightState.m_nNumLights = 0;
 
-            if (!g_pHardwareConfig->SupportsShaderModel_3_0() || mat_pbr_force_20b.GetBool())
+				s_pShaderAPI->BindStandardTexture(SAMPLER_LIGHTMAP, TEXTURE_LIGHTMAP_BUMPED);
+			}
+            
+			// WRD: Model Lightmapping Technologies!!... needs to be specified manually in SP
+			if (bLightmappedModel)
+			{
+				BindTexture(SAMPLER_LIGHTMAP, info.LightmapTexture);
+			}
+
+            if (!bSupportsSM30 || mat_pbr_force_20b.GetBool())
             {
                 // Setting up dynamic vertex shader
                 DECLARE_DYNAMIC_VERTEX_SHADER(pbr_vs20b);
@@ -618,11 +775,35 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_DYNAMIC_PIXEL_SHADER_COMBO(WRITE_DEPTH_TO_DESTALPHA, bWriteDepthToAlpha);
                 SET_DYNAMIC_PIXEL_SHADER_COMBO(PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo());
                 SET_DYNAMIC_PIXEL_SHADER_COMBO(FLASHLIGHTSHADOWS, bFlashlightShadows);
+				// WRD: This **HAS TO BE** a dynamic combo. Doesn't matter much for SP, but on MP lightmapping would NOT work if it was a static.
+				//		It doesn't hurt to be one in either case.
+				SET_DYNAMIC_PIXEL_SHADER_COMBO(LIGHTMAPPED_MODEL, bLightmappedModel);
                 SET_DYNAMIC_PIXEL_SHADER(pbr_ps30);
             }
 
             // Setting up base texture transform
-            SetVertexShaderTextureTransform(VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.baseTextureTransform);
+            SetVertexShaderTextureTransform(VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.BaseTextureTransform);
+
+			//float DetailScale = params[info.DetailScale]->GetFloatValue();
+			//bHasDetailScale = DetailScale != 0.000f;
+			//if (!bHasDetailScale)
+			//{
+			//	DetailScale = 4.0f;
+			//}
+
+			//if (bHasDetailTexture)
+			//{
+				//if (params[info.DetailTransform]->IsDefined())
+				//{
+				//	// Send the Transformdata to the	  Vertex_Shader_Shader
+				//	SetVertexShaderTextureScaledTransform(VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, info.DetailTransform, info.DetailScale);
+				//}
+				//else
+				//{
+				//	// Even if we don't Transform the DetailTexture we set detailscale and whatever BaseTextureTransform is set to, so detail textures line up
+				//	SetVertexShaderTextureScaledTransform(VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, info.BaseTextureTransform, info.DetailScale);
+				//}
+			//}
 
             // This is probably important
             SetModulationPixelShaderDynamicState_LinearColorSpace(PSREG_DIFFUSE_MODULATION);
@@ -680,16 +861,79 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 HashShadow2DJitter(flashlightState.m_flShadowJitterSeed, &tweaks[2], &tweaks[3]);
                 pShaderAPI->SetPixelShaderConstant(PSREG_ENVMAP_TINT__SHADOW_TWEAKS, tweaks, 1);
             }
+			else
+			{
+				// WRD : All of the below should only be set when no flashlight is used.
 
-            float flParams[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-            // Parallax Depth (the strength of the effect)
-            flParams[0] = GetFloatParam(info.parallaxDepth, params, 3.0f);
-            // Parallax Center (the height at which it's not moved)
-            flParams[1] = GetFloatParam(info.parallaxCenter, params, 3.0f);
-            pShaderAPI->SetPixelShaderConstant(27, flParams, 1);
+				float fEnvMapSaturation = 1;
+				fEnvMapSaturation = params[info.EnvMapSaturation]->GetFloatValue();
+				float fEnvMapContrast = 0;
+				fEnvMapContrast = params[info.EnvMapContrast]->GetFloatValue();
 
-        }
+				if (!params[info.EnvMapSaturation]->GetFloatValue() != 0)
+				{
+					fEnvMapSaturation = 1.0f;
+				}
 
+				// Packing to fit it into 32 constant registers.
+				float fEnvMapTint[3] = { 0, 0, 0 };
+				params[info.EnvMapTint]->GetVecValue(fEnvMapTint, 3);
+				// floor makes sure that envmapcontrast values below 0.01 doesn't affect the saturation.
+				float fCombine[4] = { fEnvMapTint[0], fEnvMapTint[1], fEnvMapTint[2], (floor(fEnvMapContrast * 100) * 0.01) + (fEnvMapSaturation * 0.01) };
+
+				pShaderAPI->SetPixelShaderConstant(31, fCombine);
+
+				if (bHasParallaxCorrection)
+				{
+					float envMapOrigin[4] = { 0, 0, 0, 0 };
+					params[info.EnvmapOrigin]->GetVecValue(envMapOrigin, 3);
+					pShaderAPI->SetPixelShaderConstant(10, params[info.EnvmapOrigin]->GetVecValue());
+
+					float* vecs[3];
+					vecs[0] = const_cast<float*>(params[info.EnvMapParallaxOBB1]->GetVecValue());
+					vecs[1] = const_cast<float*>(params[info.EnvMapParallaxOBB2]->GetVecValue());
+					vecs[2] = const_cast<float*>(params[info.EnvMapParallaxOBB3]->GetVecValue());
+
+					// Is this Matrix just here to eat FPS? Whats it for
+					float matrix[4][4];
+					for (int i = 0; i < 3; i++)
+					{
+						for (int j = 0; j < 4; j++)
+						{
+							matrix[i][j] = vecs[i][j];
+						}
+					}
+					// This will break your fog
+					//matrix[3][0] = matrix[3][1] = matrix[3][2] = 0;
+					//matrix[3][3] = 1;
+
+					// Will only break it if you set 4 instead of 3 here I think
+					pShaderAPI->SetPixelShaderConstant(26, &matrix[0][0], 3);
+				}
+			}
+
+			// WRD : This used to be outside of an if-statement, leading to a bunch of crashes on my end...
+			//		 I changed useParallax to a bool and check that here now.
+			if (bHasParallax)
+			{
+				float flParams[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+				// Parallax Depth (the strength of the effect)
+				flParams[0] = GetFloatParam(info.ParallaxDepth, params, 3.0f);
+				// Parallax Center (the height at which it's not moved)
+				flParams[1] = GetFloatParam(info.ParallaxCenter, params, 3.0f);
+
+				// Fitting it into 32 registers...
+				if (bHasParallaxCorrection)
+				{
+					pShaderAPI->SetPixelShaderConstant(3, flParams, 1);
+				}
+				else
+				{
+					pShaderAPI->SetPixelShaderConstant(27, flParams, 1);
+				}
+			}
+
+		}// WRD : make sure this bracket is above Draw(); or you get a ton of crashes... Happened to me once...
         // Actually draw the shader
         Draw();
     };

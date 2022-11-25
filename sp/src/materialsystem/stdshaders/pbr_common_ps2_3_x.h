@@ -134,6 +134,7 @@ float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, fl
 // Get diffuse ambient light
 float3 ambientLookupLightmap(float3 normal, float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation)
 {
+#if (!LIGHTMAPPED_MODEL)
     float2 bumpCoord1;
     float2 bumpCoord2;
     float2 bumpCoord3;
@@ -158,12 +159,15 @@ float3 ambientLookupLightmap(float3 normal, float3 textureNormal, float4 lightma
 
     float sum = dot(dp, float3(1, 1, 1));
     diffuseLighting *= g_DiffuseModulation.xyz / sum;
+#else
+	float3 diffuseLighting = GammaToLinear(2.0f * tex2D(LightmapSampler, lightmapTexCoord1And2.xy).rgb);
+#endif
     return diffuseLighting;
 }
 
 float3 ambientLookup(float3 normal, float3 ambientCube[6], float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation)
 {
-#if LIGHTMAPPED
+#if LIGHTMAPPED || LIGHTMAPPED_MODEL
     return ambientLookupLightmap(normal, textureNormal, lightmapTexCoord1And2, lightmapTexCoord3, LightmapSampler, g_DiffuseModulation);
 #else
     return PixelShaderAmbientLight(normal, ambientCube);
