@@ -17,6 +17,7 @@
 static const bool g_bSkinning           = SKINNING ? true : false;
 static const int g_FogType              = DOWATERFOG;
 const float4 cBaseTexCoordTransform[2]  : register(SHADER_SPECIFIC_CONST_0);
+//const float4 cDetailTexCoordTransform[2] :  register( SHADER_SPECIFIC_CONST_4 );	// 4 & 5
 
 //-----------------------------------------------------------------------------
 // Input vertex format
@@ -49,6 +50,12 @@ struct VS_OUTPUT
     float3 projPos                  : TEXCOORD4;
     float4 lightmapTexCoord1And2    : TEXCOORD5;
     float4 lightmapTexCoord3        : TEXCOORD6;
+	
+	//	float3 detailTexCoord_atten3	: TEXCOORD7;
+	// WRD : if you want to add anything else,  you must remove something.
+	//		 having more than 8 outputs here will cause an error. TEXCOORD0-7 WILL WORK!!
+	// Suggestion : put whatever you want to add into '#if (WVT == 0)''
+
 #if WVT
     float blend                     : COLOR0;
 #endif
@@ -107,8 +114,10 @@ VS_OUTPUT main( const VS_INPUT v )
         o.lightAtten.z = GetVertexAttenForLight(worldPos, 2, false);
     #endif
 
+//	o.detailTexCoord_atten3.z = 0.0f;
     #if (NUM_LIGHTS > 3)
         o.lightAtten.w = GetVertexAttenForLight(worldPos, 3, false);
+//		o.detailTexCoord_atten3.z = GetVertexAttenForLight( worldPos, 3, false );
     #endif
 
     #if WVT
@@ -119,6 +128,10 @@ VS_OUTPUT main( const VS_INPUT v )
     o.baseTexCoord.x = dot(v.vTexCoord0, cBaseTexCoordTransform[0]);
     o.baseTexCoord.y = dot(v.vTexCoord0, cBaseTexCoordTransform[1]);
     o.baseTexCoord = v.vTexCoord0;
+
+	// Detail texture coordinate transform
+//	o.detailTexCoord_atten3.x = dot( v.vTexCoord0, cDetailTexCoordTransform[0] );
+//	o.detailTexCoord_atten3.y = dot( v.vTexCoord0, cDetailTexCoordTransform[1] );
 
     return o;
 }

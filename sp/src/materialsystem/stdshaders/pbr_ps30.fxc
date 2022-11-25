@@ -10,6 +10,7 @@
 // STATIC: "EMISSIVE"                   "0..1"
 // STATIC: "PARALLAXOCCLUSION"          "0..1"
 // STATIC: "WVT"                        "0..1"
+// STATIC: "PCC"                        "0..1"
 // STATIC: "HSV"                        "0..1"
 // STATIC: "HSV_BLEND"                  "0..1"
 
@@ -18,7 +19,12 @@
 // DYNAMIC: "NUM_LIGHTS"                "0..4"
 // DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"  "0..1"
 // DYNAMIC: "FLASHLIGHTSHADOWS"         "0..1"
+// DYNAMIC: "LIGHTMAPPED_MODEL"			"0..1"
 
+// Had to do this so save a constant
+// SKIP: ($WVT == 1) && ($PCC == 1) 
+// Lightmapped Models cannot have brush lightmaps
+// SKIP: ($LIGHTMAPPED_MODEL == 1) && ($LIGHTMAPPED == 1)
 // Can't write fog to alpha if there is no fog
 // SKIP: ($PIXELFOGTYPE == 0) && ($WRITEWATERFOGTODESTALPHA != 0)
 // We don't care about flashlight depth unless the flashlight is on
@@ -50,9 +56,28 @@ const float4 g_EmissionScale                    : register(c2);
 #define lightMapScale g_HSV.w
 
 #if PARALLAXOCCLUSION
+#if PCC
+const float4 g_ParallaxParms                    : register( c3 );
+#else
 const float4 g_ParallaxParms                    : register( c27 );
+#endif
+
 #define PARALLAX_DEPTH                          g_ParallaxParms.r
 #define PARALLAX_CENTER                         g_ParallaxParms.g
+#endif
+
+#if PCC
+//10
+const float4 cubemapPos                        : register(c10);
+//26-29 apparently
+// This should *actually* be a float4x4, however its not required...
+const float4x3 obbMatrix                       : register(c26); // c26...c27...c28
+// NOTE : c28 is TECHNICALLY used by cFlashlightColor. When the flashlight is rendering the cubemap is disabled!
+#endif
+
+#if !FLASHLIGHT
+	//  31
+	const float4 g_EnvMapValues                     : register(c31);
 #endif
 
 sampler BaseTextureSampler          : register(s0);     // Base map, selfillum in alpha
@@ -197,14 +222,66 @@ float4 main(PS_INPUT i) : COLOR
 #endif
 
     // Start ambient
+#if LIGHTMAPPED_MODEL
+	// WRD : doesn't use the same function. Look into the header file to see what it does.
+    float3 diffuseIrradiance = ambientLookup(normal, cAmbientCube, textureNormal, correctedTexCoord.xyyy, i.lightmapTexCoord3, LightmapSampler, modul);
+#else
     float3 diffuseIrradiance = ambientLookup(normal, cAmbientCube, textureNormal, i.lightmapTexCoord1And2, i.lightmapTexCoord3, LightmapSampler, modul);
+#endif
+
     float3 ambientLightingFresnelTerm = fresnelSchlickRoughness(fresnelReflectance, lightDirectionAngle, roughness); // F
 
     float3 diffuseContributionFactor = lerp(1 - ambientLightingFresnelTerm, 0, metalness); ; // kd
     float3 diffuseIBL = diffuseContributionFactor * albedo.rgb * diffuseIrradiance;
 
-    float4 specularUV = float4(specularReflectionVector, roughness * ENVMAPLOD);
-    float3 lookupHigh = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, specularUV).xyz;
+#if (PCC == 1)
+        float4 vNormal = float4(0, 0, 1, 1);        
+        // calculate reflectionVector
+
+        float3 worldVertToEyeVector = g_EyePos.xyz - i.worldPos.xyz;
+		float3 reflectVect = CalcReflectionVectorUnnormalized( normal, worldVertToEyeVector );
+
+        // The actual parallax corrected cubemaps code
+
+        //Parallax correction (2_0b and beyond)
+        //Adapted from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
+        float3 WorldPosPCC = i.worldPos.xyz;
+        float3 positionLS = mul(float4(WorldPosPCC, 1), obbMatrix);
+
+        //Not Tottery Magic Code
+        //float3 rayLS = mul(reflectVect, (float3x3) obbMatrix);
+        //Tottery Magic Code
+		float3 rayLS = mul(float4(reflectVect, 0.0f), obbMatrix);
+
+        float3 firstPlaneIntersect = (float3(1.0f, 1.0f, 1.0f) - positionLS) / rayLS;
+        float3 secondPlaneIntersect = (-positionLS) / rayLS;
+        float3 furthestPlane = max(firstPlaneIntersect, secondPlaneIntersect);
+        float distance = min(furthestPlane.x, min(furthestPlane.y, furthestPlane.z));
+
+        // Use distance in WS directly to recover intersection
+        float3 intersectPositionWS = WorldPosPCC + reflectVect * distance;
+
+        reflectVect = intersectPositionWS - cubemapPos;
+
+        // Apply our ReflectVect!
+
+        float4 specularUV = float4(reflectVect, roughness * ENVMAPLOD);
+        float3 lookupHigh = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, specularUV).xyz;
+#else
+		float4 specularUV = float4(specularReflectionVector, roughness * ENVMAPLOD);
+		float3 lookupHigh = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, specularUV).xyz;
+#endif
+		
+		// Unpacking the values
+		float EnvMapContrast    =   floor(g_EnvMapValues.w);
+        float EnvMapSaturation  =   (g_EnvMapValues.w - EnvMapContrast) *100.0f;
+
+		lookupHigh *= g_EnvMapValues.xyz;
+		float3 lookupHighSquared = lookupHigh * lookupHigh;
+		lookupHigh = lerp( lookupHigh, lookupHighSquared, EnvMapContrast );
+		float3 greyScale = dot( lookupHigh, float3( 0.299f, 0.587f, 0.114f ) );
+		lookupHigh = lerp( greyScale, lookupHigh, EnvMapSaturation );
+
     float3 lookupLow = PixelShaderAmbientLight(specularReflectionVector, cAmbientCube);
     float3 specularIrradiance = lerp(lookupHigh, lookupLow, roughness * roughness);
     float3 specularIBL = specularIrradiance * EnvBRDFApprox(fresnelReflectance, roughness, lightDirectionAngle);
