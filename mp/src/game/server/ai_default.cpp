@@ -821,22 +821,35 @@ AI_DEFINE_SCHEDULE
 //=========================================================
 AI_DEFINE_SCHEDULE
 (
-	SCHED_ALERT_FACE_BESTSOUND,
+    SCHED_ALERT_FACE_BESTSOUND,
 
-	"	Tasks"
-	"		TASK_STORE_BESTSOUND_REACTORIGIN_IN_SAVEPOSITION		0"
-	"		TASK_STOP_MOVING			0"
-	"		TASK_FACE_SAVEPOSITION		0"
-	"		TASK_SET_ACTIVITY			ACTIVITY:ACT_IDLE"
-	"		TASK_WAIT					1.5"
-	"		TASK_FACE_REASONABLE		0"
-	""
-	"	Interrupts"
-	"		COND_NEW_ENEMY"
-	"		COND_SEE_FEAR"
-	"		COND_LIGHT_DAMAGE"
-	"		COND_HEAVY_DAMAGE"
-	"		COND_PROVOKED"
+    "    Tasks"
+    "        TASK_STOP_MOVING                   0"
+    "        TASK_STORE_LASTPOSITION            0"
+//  "        TASK_SET_TOLERANCE_DISTANCE        32"
+    "        TASK_GET_PATH_TO_BESTSOUND         0"
+    "        TASK_FACE_IDEAL                    0"
+    "        TASK_RUN_PATH                      0"
+    "        TASK_WAIT_FOR_MOVEMENT             0"
+    "        TASK_STOP_MOVING                   0"
+    "        TASK_WAIT                          5"
+    "        TASK_GET_PATH_TO_LASTPOSITION      0"
+    "        TASK_WALK_PATH                     0"
+    "        TASK_WAIT_FOR_MOVEMENT             0"
+    "        TASK_STOP_MOVING                   0"
+    "        TASK_CLEAR_LASTPOSITION            0"
+    "        TASK_FACE_REASONABLE               0"
+
+    ""
+    "    Interrupts"
+    "        COND_NEW_ENEMY"
+    "        COND_SEE_FEAR"
+    "        COND_LIGHT_DAMAGE"
+    "        COND_HEAVY_DAMAGE"
+    "        COND_PROVOKED"
+    "        COND_HEAR_BULLET_IMPACT"
+    "        COND_HEAR_DANGER"
+    "        COND_HEAR_COMBAT"
 );
 
 //=========================================================
@@ -937,32 +950,39 @@ AI_DEFINE_SCHEDULE
 //=========================================================
 AI_DEFINE_SCHEDULE
 (
-	SCHED_INVESTIGATE_SOUND,
+    SCHED_INVESTIGATE_SOUND,
 
-	"	Tasks"
-	"		TASK_STOP_MOVING				0"
-	"		TASK_STORE_LASTPOSITION			0"
-//	"		TASK_SET_TOLERANCE_DISTANCE		32"
-	"		TASK_GET_PATH_TO_BESTSOUND		0"
-	"		TASK_FACE_IDEAL					0"
-	"		TASK_RUN_PATH					0"
-	"		TASK_WAIT_FOR_MOVEMENT			0"
-	"		TASK_STOP_MOVING				0"
-	"		TASK_WAIT						5"
-	"		TASK_GET_PATH_TO_LASTPOSITION	0"
-	"		TASK_WALK_PATH					0"
-	"		TASK_WAIT_FOR_MOVEMENT			0"
-	"		TASK_STOP_MOVING				0"
-	"		TASK_CLEAR_LASTPOSITION			0"
-	"		TASK_FACE_REASONABLE			0"
-	""
-	"	Interrupts"
-	"		COND_NEW_ENEMY"
-	"		COND_SEE_FEAR"
-	"		COND_SEE_ENEMY"
-	"		COND_LIGHT_DAMAGE"
-	"		COND_HEAVY_DAMAGE"
-	"		COND_HEAR_DANGER"
+    "    Tasks"
+    "		        TASK_STOP_MOVING			0"
+    "		        TASK_STORE_LASTPOSITION			0"
+    "		        TASK_GET_PATH_TO_BESTSOUND		0"
+    "		        TASK_FACE_IDEAL				0"
+    "		        TASK_RUN_PATH				0"
+    "		        TASK_WAIT_FOR_MOVEMENT			0"
+    "		        TASK_STOP_MOVING			0"
+    "		        TASK_WAIT			     1.25"
+    "		        TASK_SET_ROUTE_SEARCH_TIME		1"	// Spend 1 seconds trying to build a path if stuck
+    "		        TASK_GET_PATH_TO_RANDOM_NODE	      500"
+    "		        TASK_RUN_PATH				0"
+    "		        TASK_WAIT_FOR_MOVEMENT			0"
+    "		        TASK_WAIT			      2.5"
+    "		        TASK_GET_PATH_TO_LASTPOSITION	        0"
+    "		        TASK_WALK_PATH				0"
+    "		        TASK_WAIT_FOR_MOVEMENT			0"
+    "		        TASK_STOP_MOVING			0"
+    "		        TASK_CLEAR_LASTPOSITION			0"
+    "		        TASK_FACE_REASONABLE			0"      
+   
+    ""
+    "    Interrupts"
+    "        COND_NEW_ENEMY"
+    "        COND_SEE_FEAR"
+    "        COND_SEE_ENEMY"
+    "        COND_LIGHT_DAMAGE"
+    "        COND_HEAVY_DAMAGE"
+    "        COND_HEAR_DANGER"
+    "        COND_HEAR_COMBAT"
+    "        COND_HEAR_PLAYER"
 );
 
 //=========================================================
