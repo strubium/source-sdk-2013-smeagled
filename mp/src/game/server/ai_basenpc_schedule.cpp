@@ -4394,10 +4394,7 @@ int CAI_BaseNPC::SelectIdleSchedule()
 	if ( nSched != SCHED_NONE )
 		return nSched;
 
-	if ( HasCondition ( COND_HEAR_DANGER ) ||
-		 HasCondition ( COND_HEAR_COMBAT ) ||
-		 HasCondition ( COND_HEAR_WORLD  ) ||
-		 HasCondition ( COND_HEAR_BULLET_IMPACT ) ||
+	if ( HasCondition ( COND_HEAR_WORLD  ) ||
 		 HasCondition ( COND_HEAR_PLAYER ) )
 	{
 		return SCHED_ALERT_FACE_BESTSOUND;
@@ -4433,13 +4430,11 @@ int CAI_BaseNPC::SelectAlertSchedule()
 		return SCHED_ALERT_REACT_TO_COMBAT_SOUND;
 	}
 
-	if ( HasCondition ( COND_HEAR_DANGER ) ||
-			  HasCondition ( COND_HEAR_PLAYER ) ||
-			  HasCondition ( COND_HEAR_WORLD  ) ||
-			  HasCondition ( COND_HEAR_BULLET_IMPACT ) ||
-			  HasCondition ( COND_HEAR_COMBAT ) )
+	if ( HasCondition ( COND_HEAR_BULLET_IMPACT ) ||	
+	     HasCondition ( COND_HEAR_DANGER ) ||		  
+		 HasCondition ( COND_HEAR_COMBAT ) ) 	
 	{
-		return SCHED_ALERT_FACE_BESTSOUND;
+		return SCHED_INVESTIGATE_SOUND	;
 	}
 
 	if ( gpGlobals->curtime - GetEnemies()->LastTimeSeen( AI_UNKNOWN_ENEMY ) < TIME_CARE_ABOUT_DAMAGE )
