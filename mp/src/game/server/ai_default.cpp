@@ -977,12 +977,14 @@ AI_DEFINE_SCHEDULE
     "    Interrupts"
     "        COND_NEW_ENEMY"
     "        COND_SEE_FEAR"
+    "        COND_SEE_HATE"
     "        COND_SEE_ENEMY"
     "        COND_LIGHT_DAMAGE"
     "        COND_HEAVY_DAMAGE"
     "        COND_HEAR_DANGER"
     "        COND_HEAR_COMBAT"
     "        COND_HEAR_PLAYER"
+    "        COND_HEAR_PHYSICS_DANGER"
 );
 
 //=========================================================
