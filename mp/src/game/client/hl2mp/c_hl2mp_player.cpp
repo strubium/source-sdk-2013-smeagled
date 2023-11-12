@@ -689,7 +689,6 @@ C_BaseAnimating *C_HL2MP_Player::BecomeRagdollOnClient()
 	return NULL;
 }
 
-void C_HL2MP_Player::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNear, float &zFar, float &fov )
 {
 	if ( m_lifeState != LIFE_ALIVE && !IsObserver() )
 	{
@@ -986,7 +985,7 @@ void C_HL2MP_Player::PostThink( void )
 	m_angEyeAngles = EyeAngles();
 }
 //-----------------------------------------------------------------------------
-// Purpose: First Person Ragdolls in Multiplayer
+// Purpose: First-Person Ragdolls in Multiplayer
 //-----------------------------------------------------------------------------
 void C_HL2MP_Player::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNear, float &zFar, float &fov )
 {
