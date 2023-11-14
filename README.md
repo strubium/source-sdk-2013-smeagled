@@ -9,4 +9,12 @@ Features:
 * SCHED_HOLD_RALLY_POINT now uses the right operator
 * HUGE compile time increase for vrad.exe (Was 30 minutes, now 6.5)
   * I highly recommend looking at the original PR for this, it's very cool https://github.com/ValveSoftware/source-sdk-2013/pull/436   
-* vrad.exe now uses 32 threads instead of 16      
+* vrad.exe now uses 32 threads instead of 16
+* Proximity voice chat in multiplayer
+* Fixed <code>func_monitor</code> not networking properly in multiplayer
+
+Coming Soon: 
+* Webm video support (Using [Webm Video Services](https://github.com/nooodles-ahh/video_services/tree/master))
+* 7.1 surround sound support (Using Creative Alchemy)
+* DirectX 9 by default (Source 2013 sometimes defaults to using DirectX 8) 
+* VPhysics Jolt (Optimized Physics)  
