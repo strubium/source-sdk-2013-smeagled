@@ -1,5 +1,5 @@
 # Source SDK 2013 Smeagled 
-This is my modified copy of the Source SDK to serve as a base for a game I am working on 
+This is my modified copy of the Source SDK to serve as a base for a multiplayer game I am working on.
 
 Features:
 * Compiling under VS2022!!!
@@ -12,6 +12,8 @@ Features:
 * vrad.exe now uses 32 threads instead of 16
 * Proximity voice chat in multiplayer
 * Fixed <code>func_monitor</code> not networking properly in multiplayer
+* Fixed being unable to detonate <code>weapon_slam</code> when having a satchel in the world and ready tripmine in hands.
+* Improved the preformence of Glow Outlines  
 
 Coming Soon: 
 * Webm video support (Using [Webm Video Services](https://github.com/nooodles-ahh/video_services/tree/master))
