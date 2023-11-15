@@ -15,7 +15,8 @@ Features:
 * Fixed being unable to detonate <code>weapon_slam</code> when having a satchel in the world and ready tripmine in hands.
 * Improved the preformence of Glow Outlines
 * Removed MOTD's 
-* Added Footstep sounds when you walk on props  
+* Added Footstep sounds when you walk on props
+* Added View Bobbing  
 
 Coming Soon: 
 * Webm video support (Using [Webm Video Services](https://github.com/nooodles-ahh/video_services/tree/master))
