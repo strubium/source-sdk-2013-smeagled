@@ -67,7 +67,7 @@ bool g_bMovementOptimizations = true;
 // Camera Bob ConVar's 
 ConVar cl_viewbob_enabled	( "cl_viewbob_enabled", "1", 0, "Viewbobbing Oscillation Toggle" );
 ConVar cl_viewbob_timer		( "cl_viewbob_timer", "10", 0, "Speed of Viewbob Oscillation" );
-ConVar cl_viewbob_scale		( "cl_viewbob_scale", "0.05", 0, "Magnitude of Viewbob Oscillation" );
+ConVar cl_viewbob_scale		( "cl_viewbob_scale", "0.03", 0, "Magnitude of Viewbob Oscillation" );
 
 // Roughly how often we want to update the info about the ground surface we're on.
 // We don't need to do this very often.
