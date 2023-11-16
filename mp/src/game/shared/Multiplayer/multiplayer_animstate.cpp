@@ -4,6 +4,7 @@
 //
 //=============================================================================//
 
+#include "cbase.h"
 #include "tier0/vprof.h"
 #include "animation.h"
 #include "studio.h"
