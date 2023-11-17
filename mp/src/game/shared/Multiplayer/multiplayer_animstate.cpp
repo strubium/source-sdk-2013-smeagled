@@ -3,6 +3,7 @@
 // Purpose: 
 //
 //=============================================================================//
+
 #include "cbase.h"
 #include "tier0/vprof.h"
 #include "animation.h"
@@ -845,7 +846,7 @@ bool CMultiPlayerAnimState::HandleSwimming( Activity &idealActivity )
 			m_bFirstSwimFrame = false;
 		}
 
-		idealActivity = ACT_MP_SWIM;		
+		idealActivity = ACT_MP_RUN;		
 		m_bInSwim = true;
 		return true;
 	}

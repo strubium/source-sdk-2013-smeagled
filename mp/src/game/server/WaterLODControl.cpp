@@ -11,7 +11,7 @@
 #include "tier0/memdbgon.h"
 
 //------------------------------------------------------------------------------
-// FIXME: This really should inherit from something	more lightweight
+// FIXME: This really should inherit from something to be more lightweight
 //------------------------------------------------------------------------------
 
 
@@ -96,7 +96,7 @@ bool CWaterLODControl::KeyValue( const char *szKeyName, const char *szValue )
 }
 
 //------------------------------------------------------------------------------
-// Purpose :
+// Purpose : Water LOD entity on spawn
 //------------------------------------------------------------------------------
 void CWaterLODControl::Spawn( void )
 {
