@@ -145,7 +145,7 @@ public:
 	// Should this object receive shadows?
 	virtual bool			ShouldReceiveProjectedTextures( int flags )
 	{
-		return false;
+		return true; //@strubium - shadow receiving on view models
 	}
 
 	// Add entity to visible view models list?
