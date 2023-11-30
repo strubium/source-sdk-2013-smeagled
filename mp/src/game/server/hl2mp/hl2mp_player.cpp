@@ -112,7 +112,7 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 
 	BaseClass::ChangeTeam( 0 );
 	
-//	UseClientSideAnimation();
+	UseClientSideAnimation();
 }
 
 CHL2MP_Player::~CHL2MP_Player( void )
