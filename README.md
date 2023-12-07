@@ -16,7 +16,10 @@ Features:
 * Improved the preformence of Glow Outlines
 * Removed MOTD's 
 * Added Footstep sounds when you walk on props
-* Added View Bobbing  
+* Added View Bobbing
+* Improved Vechicle networking
+* Higher Quality projected textures
+* Added support for 4 shadow maps   
 
 Coming Soon: 
 * Webm video support (Using [Webm Video Services](https://github.com/nooodles-ahh/video_services/tree/master))
