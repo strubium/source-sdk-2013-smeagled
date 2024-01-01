@@ -5,13 +5,13 @@
 // $NoKeywords: $
 //
 //=============================================================================//
-/*
-
-===== tf_client.cpp ========================================================
-
-  HL2 client/server game specific stuff
-
-*/
+//
+//
+//===== tf_client.cpp ========================================================
+//
+//  HL2 client/server game-specific stuff
+//
+//
 
 #include "cbase.h"
 #include "hl2mp_player.h"
