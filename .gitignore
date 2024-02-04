@@ -19,6 +19,16 @@ ipch
 *.idb
 *.vcxproj
 *.sln
+*.filters
+*.vsidx
+*.db
+*.bin
+*.vpc_crc
+*.sentinel
+*.txt
+*.recipe
+*.pdb
+*.lib
 
 # OSX/Linux build products
 *.mak
@@ -53,4 +63,3 @@ config.cfg
 
 # shader files
 *.tmp
-
