@@ -74,7 +74,6 @@ acttable_t CWeapon357::m_acttable[] =
 
 IMPLEMENT_ACTTABLE( CWeapon357 );
 
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor

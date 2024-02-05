@@ -29,6 +29,9 @@ ipch
 *.recipe
 *.pdb
 *.lib
+*.db-shm
+*.db-wal
+*.opendb
 
 # OSX/Linux build products
 *.mak

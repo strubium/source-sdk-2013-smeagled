@@ -1921,11 +1921,11 @@ void CWeaponRPG::InitBeam( void )
 
 	if ( ShouldDrawUsingViewModel() )
 	{
-		CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+		CBasePlayer * pPlayerOwner = ToBasePlayer( GetOwner() );
 		
-		if ( pOwner != NULL )
+		if (pPlayerOwner != NULL )
 		{
-			pEntity = pOwner->GetViewModel();
+			pEntity = pPlayerOwner->GetViewModel();
 		}
 	}
 	else
@@ -2241,12 +2241,12 @@ int CLaserDot::DrawModel( int flags )
 	float	scale;
 	Vector	endPos;
 
-	C_HL2MP_Player *pOwner = ToHL2MPPlayer( GetOwnerEntity() );
+	C_HL2MP_Player * pPlayerOwner = ToHL2MPPlayer( GetOwnerEntity() );
 
-	if ( pOwner != NULL && pOwner->IsDormant() == false )
+	if (pPlayerOwner != NULL && pPlayerOwner->IsDormant() == false )
 	{
 		// Always draw the dot in front of our faces when in first-person
-		if ( pOwner->IsLocalPlayer() && C_BasePlayer::LocalPlayerInFirstPersonView() )	//Tony; !!!
+		if (pPlayerOwner->IsLocalPlayer() && C_BasePlayer::LocalPlayerInFirstPersonView() )	//Tony; !!!
 		{
 			// Take our view position and orientation
 			vecAttachment = CurrentViewOrigin();
@@ -2255,13 +2255,13 @@ int CLaserDot::DrawModel( int flags )
 		else
 		{
 			// Take the eye position and direction
-			vecAttachment = pOwner->EyePosition();
-			QAngle angles = pOwner->EyeAngles();
+			vecAttachment = pPlayerOwner->EyePosition();
+			angles = pPlayerOwner->EyeAngles();
 			AngleVectors( angles, &vecDir );
 		}
 		
 		trace_t tr;
-		UTIL_TraceLine( vecAttachment, vecAttachment + ( vecDir * MAX_TRACE_LENGTH ), MASK_SHOT, pOwner, COLLISION_GROUP_NONE, &tr );
+		UTIL_TraceLine( vecAttachment, vecAttachment + ( vecDir * MAX_TRACE_LENGTH ), MASK_SHOT, pPlayerOwner, COLLISION_GROUP_NONE, &tr );
 		
 		// Backup off the hit plane
 		endPos = tr.endpos + ( tr.plane.normal * 4.0f );

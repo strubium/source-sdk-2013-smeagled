@@ -61,21 +61,20 @@ void* SendProxy_SendNonLocalDataTable( const SendProp *pProp, const void *pStruc
 REGISTER_SEND_PROXY_NON_MODIFIED_POINTER( SendProxy_SendNonLocalDataTable );
 
 
-BEGIN_SEND_TABLE_NOBASE( CHL2MP_Player, DT_HL2MPLocalPlayerExclusive )
-	// send a hi-res origin to the local player for use in prediction
-	SendPropVector	(SENDINFO(m_vecOrigin), -1,  SPROP_NOSCALE|SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin ),
-	SendPropFloat( SENDINFO_VECTORELEM(m_angEyeAngles, 0), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f ),
+BEGIN_SEND_TABLE_NOBASE(CHL2MP_Player, DT_HL2MPLocalPlayerExclusive)
+// send a hi-res origin to the local player for use in prediction
+SendPropVector(SENDINFO(m_vecOrigin), -1, SPROP_NOSCALE | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin),
+SendPropFloat(SENDINFO_VECTORELEM(m_angEyeAngles, 0), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f),
 //	SendPropAngle( SENDINFO_VECTORELEM(m_angEyeAngles, 1), 10, SPROP_CHANGES_OFTEN ),
 END_SEND_TABLE()
 
-BEGIN_SEND_TABLE_NOBASE( CHL2MP_Player, DT_HL2MPNonLocalPlayerExclusive )
-	// send a lo-res origin to other players
-	SendPropVector	(SENDINFO(m_vecOrigin), -1,  SPROP_COORD_MP_LOWPRECISION|SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin ),
-	SendPropFloat( SENDINFO_VECTORELEM(m_angEyeAngles, 0), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f ),
-	SendPropAngle( SENDINFO_VECTORELEM(m_angEyeAngles, 1), 10, SPROP_CHANGES_OFTEN ),
-	// Only need to latch cycle for other players
-	// If you increase the number of bits networked, make sure to also modify the code below and in the client class.
-	SendPropInt( SENDINFO( m_cycleLatch ), 4, SPROP_UNSIGNED ),
+BEGIN_SEND_TABLE_NOBASE(CHL2MP_Player, DT_HL2MPNonLocalPlayerExclusive)
+// send a lo-res origin to other players
+SendPropVector(SENDINFO(m_vecOrigin), -1, SPROP_COORD_MP_LOWPRECISION | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin),
+SendPropFloat(SENDINFO_VECTORELEM(m_angEyeAngles, 0), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f),
+SendPropAngle(SENDINFO_VECTORELEM(m_angEyeAngles, 1), 10, SPROP_CHANGES_OFTEN),
+// Only need to latch cycle for other players
+// If you increase the number of bits networked, make sure to also modify the code below and in the client class.
 END_SEND_TABLE()
 
 IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
@@ -164,7 +163,6 @@ CHL2MP_Player::CHL2MP_Player()
 	m_bReady = false;
 
 	m_cycleLatch = 0;
-	m_cycleLatchTimer.Invalidate();
 
 	BaseClass::ChangeTeam( 0 );
 	
@@ -205,8 +203,6 @@ void CHL2MP_Player::Precache( void )
 
 	for ( i = 0; i < nHeads; ++i )
 		 PrecacheModel( g_ppszRandomCombineModels[i] );
-
-	PrecacheFootStepSounds();
 
 	PrecacheScriptSound( "NPC_MetroPolice.Die" );
 	PrecacheScriptSound( "NPC_CombineS.Die" );
@@ -386,7 +382,6 @@ void CHL2MP_Player::Spawn(void)
 
 	m_bReady = false;
 
-	m_cycleLatchTimer.Start( CYCLELATCH_UPDATE_INTERVAL );
 
 	//Tony; do the spawn animevent
 	DoAnimationEvent( PLAYERANIMEVENT_SPAWN );
@@ -598,12 +593,6 @@ void CHL2MP_Player::PostThink( void )
 	m_angEyeAngles = EyeAngles();
 	m_PlayerAnimState->Update( m_angEyeAngles[YAW], m_angEyeAngles[PITCH] );
 
-	if ( IsAlive() && m_cycleLatchTimer.IsElapsed() )
-	{
-		m_cycleLatchTimer.Start( CYCLELATCH_UPDATE_INTERVAL );
-		// Compress the cycle into 4 bits. Can represent 0.0625 in steps which is enough.
-		m_cycleLatch.GetForModify() = 16 * GetCycle();
-	}
 }
 
 void CHL2MP_Player::PlayerDeathThink()

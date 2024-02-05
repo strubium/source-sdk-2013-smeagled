@@ -668,35 +668,35 @@ void CHL2MPPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
 // Input  :  - 
 // Output : float
 //-----------------------------------------------------------------------------
-float CHL2MPPlayerAnimState::GetCurrentMaxGroundSpeed()
-{
-	CStudioHdr *pStudioHdr = GetBasePlayer()->GetModelPtr();
+float CHL2MPPlayerAnimState::GetCurrentMaxGroundSpeed() {
+	CStudioHdr* pStudioHdr = GetBasePlayer()->GetModelPtr();
 
-	if ( pStudioHdr == NULL )
+	if (pStudioHdr == NULL)
 		return 1.0f;
 
-//	float prevX = GetBasePlayer()->GetPoseParameter( m_PoseParameterData.m_iMoveX );
-	float prevY = GetBasePlayer()->GetPoseParameter( m_PoseParameterData.m_iMoveY );
+	//	float prevX = GetBasePlayer()->GetPoseParameter( m_PoseParameterData.m_iMoveX );
+	float prevY = GetBasePlayer()->GetPoseParameter(m_PoseParameterData.m_iMoveY);
 
-	float d = sqrt( /*prevX * prevX + */prevY * prevY );
+	float d = sqrt( /*prevX * prevX + */prevY * prevY);
 	float newY;//, newX;
-	if ( d == 0.0 )
-	{ 
-//		newX = 1.0;
+	if (d == 0.0)
+	{
+		//		newX = 1.0;
 		newY = 0.0;
 	}
 	else
 	{
-//		newX = prevX / d;
+		//		newX = prevX / d;
 		newY = prevY / d;
 	}
 
-//	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, newX );
-	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveY, newY );
+	//	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, newX );
+	GetBasePlayer()->SetPoseParameter(pStudioHdr, m_PoseParameterData.m_iMoveY, newY);
 
-	float speed = GetBasePlayer()->GetSequenceGroundSpeed( GetBasePlayer()->GetSequence() );
+	float speed = GetBasePlayer()->GetSequenceGroundSpeed(GetBasePlayer()->GetSequence());
 
-//	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, prevX );
-	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveY, prevY );
+	//	GetBasePlayer()->SetPoseParameter( pStudioHdr, m_PoseParameterData.m_iMoveX, prevX );
+	GetBasePlayer()->SetPoseParameter(pStudioHdr, m_PoseParameterData.m_iMoveY, prevY);
 
 	return speed;
+}

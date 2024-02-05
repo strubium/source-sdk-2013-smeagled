@@ -133,6 +133,8 @@ public:
 
 
 	Vector m_vecTotalBulletForce;	//Accumulator for bullet force in a single frame
+	int m_cycleLatchTimer;
+	int m_cycleLatch;
 
 	// Tracks our ragdoll entity.
 	CNetworkHandle( CBaseEntity, m_hRagdoll );	// networked entity handle 
