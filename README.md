@@ -2,7 +2,7 @@
 This is my modified copy of the Source SDK to serve as a base for a multiplayer game I am working on.
 
 Features:
-* Compiling under VS2022!!!
+* Compiling under VS2022!!! (Based on [ozxybox](https://github.com/Source-SDK-Resources/source-sdk-vs2022)'s work)
 * Props will now use their scrapeSmooth sound if they have one
 * On death, you will not go into third person.
 * ent_fire's delay can now be a decimal
@@ -20,8 +20,8 @@ Features:
 * Improved Vechicle networking
 * Higher Quality projected textures
 * Added support for 4 shadow maps
-* Texture Streaming, based on Arsenio2044
-* Twice the number of entites. Was 2048, is now 4096     
+* Texture Streaming, based on <code>[Arsenio2044](https://github.com/Arsenio2044/arsenio-src/tree/Arsenio-2023-engine)</code>
+* Twice the number of entites (Was 2048, is now 4096)     
 
 Coming Soon: 
 * Webm video support (Using [Webm Video Services](https://github.com/nooodles-ahh/video_services/tree/master))
