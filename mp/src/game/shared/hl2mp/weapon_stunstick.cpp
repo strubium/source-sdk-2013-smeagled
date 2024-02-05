@@ -57,10 +57,7 @@ public:
 
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();
-
-#ifndef CLIENT_DLL
 	DECLARE_ACTTABLE();
-#endif
 
 #ifdef CLIENT_DLL
 	virtual int				DrawModel( int flags );
@@ -68,7 +65,7 @@ public:
 	virtual void			OnDataChanged( DataUpdateType_t updateType );
 	virtual RenderGroup_t	GetRenderGroup( void );
 	virtual void			ViewModelDrawn( C_BaseViewModel *pBaseViewModel );
-	
+	virtual bool			IsTransparent( void );
 #endif
 
 	virtual void Precache();
@@ -123,6 +120,9 @@ private:
 
 	float	m_flFadeTime;
 
+	//Tony; third person check thing, this has to be done for the local player if third person switches, so we can re-calc attachment points.
+	virtual void			ThirdPersonSwitch( bool bThirdPerson );
+
 #endif
 
 	CNetworkVar( bool, m_bActive );
@@ -149,23 +149,24 @@ LINK_ENTITY_TO_CLASS( weapon_stunstick, CWeaponStunStick );
 PRECACHE_WEAPON_REGISTER( weapon_stunstick );
 
 
-#ifndef CLIENT_DLL
-
 acttable_t	CWeaponStunStick::m_acttable[] = 
 {
-	{ ACT_RANGE_ATTACK1,				ACT_RANGE_ATTACK_SLAM, true },
-	{ ACT_HL2MP_IDLE,					ACT_HL2MP_IDLE_MELEE,					false },
-	{ ACT_HL2MP_RUN,					ACT_HL2MP_RUN_MELEE,					false },
-	{ ACT_HL2MP_IDLE_CROUCH,			ACT_HL2MP_IDLE_CROUCH_MELEE,			false },
-	{ ACT_HL2MP_WALK_CROUCH,			ACT_HL2MP_WALK_CROUCH_MELEE,			false },
-	{ ACT_HL2MP_GESTURE_RANGE_ATTACK,	ACT_HL2MP_GESTURE_RANGE_ATTACK_MELEE,	false },
-	{ ACT_HL2MP_GESTURE_RELOAD,			ACT_HL2MP_GESTURE_RELOAD_MELEE,			false },
-	{ ACT_HL2MP_JUMP,					ACT_HL2MP_JUMP_MELEE,					false },
+	{ ACT_MP_STAND_IDLE,				ACT_HL2MP_IDLE_MELEE,					false },
+	{ ACT_MP_CROUCH_IDLE,				ACT_HL2MP_IDLE_CROUCH_MELEE,			false },
+
+	{ ACT_MP_RUN,						ACT_HL2MP_RUN_MELEE,					false },
+	{ ACT_MP_CROUCHWALK,				ACT_HL2MP_WALK_CROUCH_MELEE,			false },
+
+	{ ACT_MP_ATTACK_STAND_PRIMARYFIRE,	ACT_HL2MP_GESTURE_RANGE_ATTACK_MELEE,	false },
+	{ ACT_MP_ATTACK_CROUCH_PRIMARYFIRE,	ACT_HL2MP_GESTURE_RANGE_ATTACK_MELEE,	false },
+
+	{ ACT_MP_RELOAD_STAND,				ACT_HL2MP_GESTURE_RELOAD_MELEE,			false },
+	{ ACT_MP_RELOAD_CROUCH,				ACT_HL2MP_GESTURE_RELOAD_MELEE,			false },
+
+	{ ACT_MP_JUMP,						ACT_HL2MP_JUMP_MELEE,					false },
 };
 
 IMPLEMENT_ACTTABLE(CWeaponStunStick);
-
-#endif
 
 
 //-----------------------------------------------------------------------------
@@ -447,6 +448,10 @@ void CWeaponStunStick::SetStunState( bool state )
 bool CWeaponStunStick::Deploy( void )
 {
 	SetStunState( true );
+#ifdef CLIENT_DLL
+	//Tony; we need to just do this
+	SetupAttachmentPoints();
+#endif
 
 	return BaseClass::Deploy();
 }
@@ -735,15 +740,15 @@ void C_WeaponStunStick::DrawThirdPersonEffects( void )
 		// Update our effects
 		if ( gpGlobals->frametime != 0.0f && ( random->RandomInt( 0, 5 ) == 0 ) )
 		{
-			Vector	vecBeamOrigin;
-			QAngle	vecBeamAngles;
+			Vector	vecOrigin;
+			QAngle	vecAngles;
 
-			GetAttachment( 1, vecBeamOrigin, vecBeamAngles );
+			GetAttachment( 1, vecOrigin, vecAngles );
 
 			Vector	vForward;
-			AngleVectors( vecBeamAngles, &vForward );
+			AngleVectors( vecAngles, &vForward );
 
-			Vector vEnd = vecBeamOrigin - vForward * 1.0f;
+			Vector vEnd = vecOrigin - vForward * 1.0f;
 
 			// Inner beams
 			BeamInfo_t beamInfo;
@@ -752,7 +757,7 @@ void C_WeaponStunStick::DrawThirdPersonEffects( void )
 			Vector	offset = RandomVector( -12, 8 );
 
 			offset += Vector(4,4,4);
-			beamInfo.m_vecEnd = vecBeamOrigin + offset;
+			beamInfo.m_vecEnd = vecOrigin + offset;
 
 			beamInfo.m_pStartEnt= cl_entitylist->GetEnt( BEAMENT_ENTITY( entindex() ) );
 			beamInfo.m_pEndEnt	= cl_entitylist->GetEnt( BEAMENT_ENTITY( entindex() ) );
@@ -842,6 +847,10 @@ void C_WeaponStunStick::DrawFirstPersonEffects( void )
 	}
 }
 
+void C_WeaponStunStick::ThirdPersonSwitch( bool bThirdPerson )
+{
+	SetupAttachmentPoints();
+}
 //-----------------------------------------------------------------------------
 // Purpose: Draw our special effects
 //-----------------------------------------------------------------------------
@@ -872,6 +881,13 @@ void C_WeaponStunStick::ViewModelDrawn( C_BaseViewModel *pBaseViewModel )
 	BaseClass::ViewModelDrawn( pBaseViewModel );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: We are always considered transparent
+//-----------------------------------------------------------------------------
+bool C_WeaponStunStick::IsTransparent( void )
+{
+	return true;
+}
 //-----------------------------------------------------------------------------
 // Purpose: Draw a cheap glow quad at our impact point (with sparks)
 //-----------------------------------------------------------------------------
