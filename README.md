@@ -19,7 +19,9 @@ Features:
 * Added View Bobbing
 * Improved Vechicle networking
 * Higher Quality projected textures
-* Added support for 4 shadow maps   
+* Added support for 4 shadow maps
+* Texture Streaming, based on Arsenio2044
+* Twice the number of entites. Was 2048, is now 4096     
 
 Coming Soon: 
 * Webm video support (Using [Webm Video Services](https://github.com/nooodles-ahh/video_services/tree/master))
