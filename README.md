@@ -21,7 +21,9 @@ Features:
 * Higher Quality projected textures
 * Added support for 4 shadow maps
 * Texture Streaming, based on <code>[Arsenio2044](https://github.com/Arsenio2044/arsenio-src/tree/Arsenio-2023-engine)</code>
-* Twice the number of entites (Was 2048, is now 4096)     
+* Twice the number of entites (Was 2048, is now 4096)
+* Brush based ladders
+  * "add <code>%compileladder" 1 </code> and it will work as a ladder    
 
 Coming Soon: 
 * Webm video support (Using [Webm Video Services](https://github.com/nooodles-ahh/video_services/tree/master))
