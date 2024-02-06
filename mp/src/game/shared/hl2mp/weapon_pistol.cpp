@@ -198,15 +198,15 @@ void CWeaponPistol::PrimaryAttack( void )
 	m_flLastAttackTime = gpGlobals->curtime;
 	m_flSoonestPrimaryAttack = gpGlobals->curtime + PISTOL_FASTEST_REFIRE_TIME;
 
-	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+	CBasePlayer *pPlayerOwner  = ToBasePlayer( GetOwner() );
 
-	if( pOwner )
+	if( pPlayerOwner  )
 	{
 		// Each time the player fires the pistol, reset the view punch. This prevents
 		// the aim from 'drifting off' when the player fires very quickly. This may
 		// not be the ideal way to achieve this, but it's cheap and it works, which is
 		// great for a feature we're evaluating. (sjb)
-		pOwner->ViewPunchReset();
+		pPlayerOwner ->ViewPunchReset();
 	}
 
 	BaseClass::PrimaryAttack();
@@ -220,13 +220,13 @@ void CWeaponPistol::PrimaryAttack( void )
 //-----------------------------------------------------------------------------
 void CWeaponPistol::UpdatePenaltyTime( void )
 {
-	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+	CBasePlayer *pPlayerOwner  = ToBasePlayer( GetOwner() );
 
-	if ( pOwner == NULL )
+	if ( pPlayerOwner  == NULL )
 		return;
 
 	// Check our penalty time decay
-	if ( ( ( pOwner->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
+	if ( ( ( pPlayerOwner ->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
 	{
 		m_flAccuracyPenalty -= gpGlobals->frametime;
 		m_flAccuracyPenalty = clamp( m_flAccuracyPenalty, 0.0f, PISTOL_ACCURACY_MAXIMUM_PENALTY_TIME );
@@ -263,12 +263,12 @@ void CWeaponPistol::ItemPostFrame( void )
 	if ( m_bInReload )
 		return;
 	
-	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+	CBasePlayer *pPlayerOwner  = ToBasePlayer( GetOwner() );
 
-	if ( pOwner == NULL )
+	if ( pPlayerOwner  == NULL )
 		return;
 	
-	if ( pOwner->m_nButtons & IN_ATTACK2 )
+	if ( pPlayerOwner ->m_nButtons & IN_ATTACK2 )
 	{
 		m_flLastAttackTime = gpGlobals->curtime + PISTOL_FASTEST_REFIRE_TIME;
 		m_flSoonestPrimaryAttack = gpGlobals->curtime + PISTOL_FASTEST_REFIRE_TIME;
@@ -276,11 +276,11 @@ void CWeaponPistol::ItemPostFrame( void )
 	}
 
 	//Allow a refire as fast as the player can click
-	if ( ( ( pOwner->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
+	if ( ( ( pPlayerOwner ->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
 	{
 		m_flNextPrimaryAttack = gpGlobals->curtime - 0.1f;
 	}
-	else if ( ( pOwner->m_nButtons & IN_ATTACK ) && ( m_flNextPrimaryAttack < gpGlobals->curtime ) && ( m_iClip1 <= 0 ) )
+	else if ( ( pPlayerOwner ->m_nButtons & IN_ATTACK ) && ( m_flNextPrimaryAttack < gpGlobals->curtime ) && ( m_iClip1 <= 0 ) )
 	{
 		DryFire();
 	}

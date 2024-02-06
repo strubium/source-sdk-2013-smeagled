@@ -3391,7 +3391,7 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 			AngleVectors(angles, &vAng);
 			vAttachment += vAng * 2;
 
-			dlight_t *dl = effects->CL_AllocDlight(index);
+			dlight_t *dl = effects->CL_AllocDlight(m_index);
 			dl->origin = vAttachment;
 
 			// Original color values
