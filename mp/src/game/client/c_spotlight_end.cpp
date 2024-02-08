@@ -109,9 +109,9 @@ void C_SpotlightEnd::ClientThink(void)
 		return;
 
 	// Deal with the environment light
-	if ( !m_pDynamicLight || (m_pDynamicLight->key != m_index) )
+	if ( !m_pDynamicLight || (m_pDynamicLight->key != index) )
 	{
-		m_pDynamicLight = effects->CL_AllocDlight( m_index );
+		m_pDynamicLight = effects->CL_AllocDlight( index );
 		assert (m_pDynamicLight);
 	}
 

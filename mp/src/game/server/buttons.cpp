@@ -897,11 +897,6 @@ void CRotButton::Spawn( void )
 	m_fRotating = TRUE;
 
 	SetUse(&CRotButton::ButtonUse);
-	
-	if (HasSpawnFlags(SF_BUTTON_LOCKED))
-	{
-		m_bLocked = true;
-	}
 
 	//
 	// If touching activates the button, set its touch function.
@@ -1312,7 +1307,7 @@ void CMomentaryRotButton::SetPositionMoveDone(void)
 //			useType - 
 //			value - 
 //-----------------------------------------------------------------------------
-void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float /*value*/ ) // FIXME: VS2022 Port - parameter 'value' unused?
+void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if ( m_bDisabled == true )
 		return;

@@ -1138,20 +1138,21 @@ void CNPC_BaseZombie::DieChopped( const CTakeDamageInfo &info )
 
 	if ( UTIL_ShouldShowBlood( BLOOD_COLOR_YELLOW ) )
 	{
-		Vector vecYellowSpot;
+		int i;
+		Vector vecSpot;
+		Vector vecDir;
 
-		for ( int i = 0 ; i < 4; i++ )
+		for ( i = 0 ; i < 4; i++ )
 		{
-			vecYellowSpot = WorldSpaceCenter();
+			vecSpot = WorldSpaceCenter();
 
-			vecYellowSpot.x += random->RandomFloat( -12, 12 );
-			vecYellowSpot.y += random->RandomFloat( -12, 12 );
-			vecYellowSpot.z += random->RandomFloat( -4, 16 );
+			vecSpot.x += random->RandomFloat( -12, 12 ); 
+			vecSpot.y += random->RandomFloat( -12, 12 ); 
+			vecSpot.z += random->RandomFloat( -4, 16 ); 
 
-			UTIL_BloodDrips(vecYellowSpot, vec3_origin, BLOOD_COLOR_YELLOW, 50 );
+			UTIL_BloodDrips( vecSpot, vec3_origin, BLOOD_COLOR_YELLOW, 50 );
 		}
 
-		Vector vecDir;
 		for ( int i = 0 ; i < 4 ; i++ )
 		{
 			Vector vecSpot = WorldSpaceCenter();
@@ -2419,13 +2420,13 @@ void CNPC_BaseZombie::ReleaseHeadcrab( const Vector &vecOrigin, const Vector &ve
 
 				for ( int i = 0 ; i < 3 ; i++ )
 				{
-					Vector vecBloodSpot = pGib->WorldSpaceCenter();
+					Vector vecSpot = pGib->WorldSpaceCenter();
 					
-					vecBloodSpot.x += random->RandomFloat( -8, 8 );
-					vecBloodSpot.y += random->RandomFloat( -8, 8 );
-					vecBloodSpot.z += random->RandomFloat( -8, 8 );
+					vecSpot.x += random->RandomFloat( -8, 8 ); 
+					vecSpot.y += random->RandomFloat( -8, 8 ); 
+					vecSpot.z += random->RandomFloat( -8, 8 ); 
 
-					UTIL_BloodDrips( vecBloodSpot, vec3_origin, BLOOD_COLOR_YELLOW, 50 );
+					UTIL_BloodDrips( vecSpot, vec3_origin, BLOOD_COLOR_YELLOW, 50 );
 				}
 			}
 		}

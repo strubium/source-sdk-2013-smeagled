@@ -59,6 +59,7 @@ class CEntityMapData;
 class ConVar;
 class CDmgAccumulator;
 class IHasAttributes;
+class IBrushRenderer;
 
 struct CSoundParameters;
 
@@ -1278,7 +1279,7 @@ public:
 public:	
 
 	// Determine what entity this corresponds to
-	int								m_index;	
+	int								index;	
 
 	// Render information
 	unsigned char					m_nRenderFX;
@@ -1292,7 +1293,7 @@ public:
 private:
 	
 	// Model for rendering
-	const model_t					*m_model;
+	const model_t					*model;
 
 public:
 	// Time animation sequence or frame was last changed
@@ -1691,6 +1692,10 @@ protected:
 	CThreadFastMutex m_CalcAbsolutePositionMutex;
 	CThreadFastMutex m_CalcAbsoluteVelocityMutex;
 
+	void InstallBrushSurfaceRenderer( IBrushRenderer* );
+private:
+	bool m_bHasSpecialRenderer;
+
 #ifdef TF_CLIENT_DLL
 	// TF prevents drawing of any entity attached to players that aren't items in the inventory of the player.
 	// This is to prevent servers creating fake cosmetic items and attaching them to players.
@@ -1760,7 +1765,7 @@ inline const CParticleProperty *C_BaseEntity::ParticleProp() const
 //-----------------------------------------------------------------------------
 inline bool C_BaseEntity::IsServerEntity( void )
 {
-	return m_index != -1;
+	return index != -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -1792,7 +1797,7 @@ inline const QAngle& C_BaseEntity::GetNetworkAngles() const
 
 inline const model_t *C_BaseEntity::GetModel( void ) const
 {
-	return m_model;
+	return model;
 }
 
 inline int C_BaseEntity::GetModelIndex( void ) const

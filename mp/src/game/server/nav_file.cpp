@@ -241,17 +241,17 @@ void CNavArea::Save( CUtlBuffer &fileBuffer, unsigned int version ) const
 	//
 	// Store hiding spots for this area
 	//
-	unsigned char hidingspotscount;
+	unsigned char count;
 	if (m_hidingSpots.Count() > 255)
 	{
-		hidingspotscount = 255;
+		count = 255;
 		Warning( "Warning: NavArea #%d: Truncated hiding spot list to 255\n", m_id );
 	}
 	else
 	{
-		hidingspotscount = (unsigned char)m_hidingSpots.Count();
+		count = (unsigned char)m_hidingSpots.Count();
 	}
-	fileBuffer.PutUnsignedChar(hidingspotscount);
+	fileBuffer.PutUnsignedChar( count );
 
 	// store HidingSpot objects
 	unsigned int saveCount = 0;
@@ -262,7 +262,7 @@ void CNavArea::Save( CUtlBuffer &fileBuffer, unsigned int version ) const
 		spot->Save( fileBuffer, version );
 
 		// overflow check
-		if (++saveCount == hidingspotscount)
+		if (++saveCount == count)
 			break;
 	}
 
@@ -271,12 +271,8 @@ void CNavArea::Save( CUtlBuffer &fileBuffer, unsigned int version ) const
 	//
 	{
 		// save number of encounter paths for this area
-		// FIXME: VS2022 Port
-		//        I'd change the container, but it might break many things!
-		// unsigned int count = m_spotEncounters.Count();
-		// fileBuffer.PutUnsignedInt(count);
-		int count = m_spotEncounters.Count();
-		fileBuffer.PutInt( count );
+		unsigned int count = m_spotEncounters.Count();
+		fileBuffer.PutUnsignedInt( count );
 
 		SpotEncounter *e;
 		FOR_EACH_VEC( m_spotEncounters, it )
@@ -336,12 +332,12 @@ void CNavArea::Save( CUtlBuffer &fileBuffer, unsigned int version ) const
 	fileBuffer.Put( &entry, sizeof(entry) );
 
 	// write out ladder info
-	for ( int i=0; i<CNavLadder::NUM_LADDER_DIRECTIONS; ++i )
+	int i;
+	for ( i=0; i<CNavLadder::NUM_LADDER_DIRECTIONS; ++i )
 	{
 		// save number of encounter paths for this area
-		// FIXME: VS2022 Port - Another signed vs unsigned!
-		int laddercount = m_ladder[i].Count();
-		fileBuffer.PutInt( laddercount );
+		unsigned int count = m_ladder[i].Count();
+		fileBuffer.PutUnsignedInt( count );
 
 		NavLadderConnect ladder;
 		FOR_EACH_VEC( m_ladder[i], it )
@@ -354,14 +350,14 @@ void CNavArea::Save( CUtlBuffer &fileBuffer, unsigned int version ) const
 	}
 
 	// save earliest occupy times
-	for( int i=0; i<MAX_NAV_TEAMS; ++i )
+	for( i=0; i<MAX_NAV_TEAMS; ++i )
 	{
 		// no spot in the map should take longer than this to reach
 		fileBuffer.Put( &m_earliestOccupyTime[i], sizeof(m_earliestOccupyTime[i]) );
 	}
 
 	// save light intensity
-	for ( int i=0; i<NUM_CORNERS; ++i )
+	for ( i=0; i<NUM_CORNERS; ++i )
 	{
 		fileBuffer.PutFloat( m_lightIntensity[i] );
 	}

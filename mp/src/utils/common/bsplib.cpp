@@ -1217,10 +1217,10 @@ void CGameLump::ParseGameLump( dheader_t* pHeader )
 
 	g_Lumps.bLumpParsed[LUMP_GAME_LUMP] = true;
 
-	int lumplength = pHeader->lumps[LUMP_GAME_LUMP].filelen;
+	int length = pHeader->lumps[LUMP_GAME_LUMP].filelen;
 	int ofs = pHeader->lumps[LUMP_GAME_LUMP].fileofs;
 	
-	if (lumplength > 0)
+	if (length > 0)
 	{
 		// Read dictionary...
 		dgamelumpheader_t* pGameLumpHeader = (dgamelumpheader_t*)((byte *)pHeader + ofs);
@@ -3307,6 +3307,7 @@ Fills in s->texmins[] and s->texsize[]
 void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightmapTextureSizeInLuxels[2])
 {
 	vec_t	    mins[2], maxs[2], val=0;
+	int		    i,j, e=0;
 	dvertex_t	*v=NULL;
 	texinfo_t	*tex=NULL;
 	
@@ -3315,15 +3316,15 @@ void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightma
 
 	tex = &texinfo[s->texinfo];
 	
-	for (int i=0 ; i<s->numedges ; i++)
+	for (i=0 ; i<s->numedges ; i++)
 	{
-		int e = dsurfedges[s->firstedge+i];
+		e = dsurfedges[s->firstedge+i];
 		if (e >= 0)
 			v = dvertexes + dedges[e].v[0];
 		else
 			v = dvertexes + dedges[-e].v[1];
 		
-		for (int j=0 ; j<2 ; j++)
+		for (j=0 ; j<2 ; j++)
 		{
 			val = v->point[0] * tex->lightmapVecsLuxelsPerWorldUnits[j][0] + 
 				  v->point[1] * tex->lightmapVecsLuxelsPerWorldUnits[j][1] + 
@@ -3337,7 +3338,7 @@ void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightma
 	}
 
 	int nMaxLightmapDim = (s->dispinfo == -1) ? MAX_LIGHTMAP_DIM_WITHOUT_BORDER : MAX_DISP_LIGHTMAP_DIM_WITHOUT_BORDER;
-	for (int i=0 ; i<2 ; i++)
+	for (i=0 ; i<2 ; i++)
 	{	
 		mins[i] = ( float )floor( mins[i] );
 		maxs[i] = ( float )ceil( maxs[i] );
@@ -3349,7 +3350,7 @@ void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightma
 			Vector point = vec3_origin;
 			for (int j=0 ; j<s->numedges ; j++)
 			{
-				int e = dsurfedges[s->firstedge+j];
+				e = dsurfedges[s->firstedge+j];
 				v = (e<0)?dvertexes + dedges[-e].v[1] : dvertexes + dedges[e].v[0];
 				point += v->point;
 				Warning( "Bad surface extents point: %f %f %f\n", v->point.x, v->point.y, v->point.z );
@@ -4577,9 +4578,9 @@ bool RepackBSPCallback_LZMA( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer )
 }
 
 
-bool RepackBSP( CUtlBuffer &inputBuffer_, CUtlBuffer &outputBuffer, CompressFunc_t pCompressFunc, IZip::eCompressionType packfileCompression )
+bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_t pCompressFunc, IZip::eCompressionType packfileCompression )
 {
-	dheader_t *pInBSPHeader = (dheader_t *)inputBuffer_.Base();
+	dheader_t *pInBSPHeader = (dheader_t *)inputBuffer.Base();
 	// The 360 swaps this header to disk. For some reason.
 	if ( pInBSPHeader->ident != ( IsX360() ? BigLong( IDBSPHEADER ) : IDBSPHEADER ) )
 	{

@@ -1864,9 +1864,9 @@ int CNPC_Combine::SelectSchedule( void )
 
 	case NPC_STATE_COMBAT:
 		{
-			int nCombatSched = SelectCombatSchedule();
-			if ( nCombatSched  != SCHED_NONE )
-				return nCombatSched;
+			int nSched = SelectCombatSchedule();
+			if ( nSched != SCHED_NONE )
+				return nSched;
 		}
 		break;
 	}

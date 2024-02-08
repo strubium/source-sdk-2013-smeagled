@@ -37,7 +37,7 @@ C_PointCamera* GetPointCameraList()
 
 C_PointCamera::C_PointCamera()
 {
-	m_bActive = true;
+	m_bActive = false;
 	m_bFogEnable = false;
 
 	g_PointCameraList.Insert( this );

@@ -508,7 +508,7 @@ void CSentence::ParseWords( CUtlBuffer& buf )
 			// Parse phoneme
 			int code;
 			char phonemename[ 256 ];
-			float phonemestart, phonemeend;
+			float start, end;
 			float volume;
 
 			code = atoi( token );
@@ -516,9 +516,9 @@ void CSentence::ParseWords( CUtlBuffer& buf )
 			buf.GetString( token );
 			Q_strncpy( phonemename, token, sizeof( phonemename ) );
 			buf.GetString( token );
-			phonemestart = atof( token );
+			start = atof( token );
 			buf.GetString( token );
-			phonemeend = atof( token );
+			end = atof( token );
 			buf.GetString( token );
 			volume = atof( token );
 
@@ -526,8 +526,8 @@ void CSentence::ParseWords( CUtlBuffer& buf )
 			assert( pt );
 			pt->SetPhonemeCode( code );
 			pt->SetTag( phonemename );
-			pt->SetStartTime( phonemestart );
-			pt->SetEndTime( phonemeend );
+			pt->SetStartTime( start );
+			pt->SetEndTime( end );
 
 			AddPhonemeTag( wt, pt );
 		}
@@ -1295,9 +1295,9 @@ CSentence& CSentence::operator=( const CSentence& src )
 void CSentence::Append( float starttime, const CSentence& src )
 {
 #if PHONEME_EDITOR
-	
+	int i;
 	// Combine
-	for ( int i = 0 ; i < src.m_Words.Size(); i++ )
+	for ( i = 0 ; i < src.m_Words.Size(); i++ )
 	{
 		CWordTag *word = src.m_Words[ i ];
 
@@ -1308,9 +1308,9 @@ void CSentence::Append( float starttime, const CSentence& src )
 
 		// Offset times
 		int c = newWord->m_Phonemes.Count();
-		for ( int j = 0; j < c; ++j)
+		for ( int i = 0; i < c; ++i )
 		{
-			CPhonemeTag *tag = newWord->m_Phonemes[ j ];
+			CPhonemeTag *tag = newWord->m_Phonemes[ i ];
 			tag->AddStartTime( starttime );
 			tag->AddEndTime( starttime );
 		}
@@ -1333,7 +1333,7 @@ void CSentence::Append( float starttime, const CSentence& src )
 	}
 
 	int c = src.m_EmphasisSamples.Size();
-	for ( int i = 0; i < c; i++ )
+	for ( i = 0; i < c; i++ )
 	{
 		CEmphasisSample s = src.m_EmphasisSamples[ i ];
 

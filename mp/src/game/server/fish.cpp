@@ -48,22 +48,22 @@ END_DATADESC()
  */
 void SendProxy_FishOriginX( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID )
 {
-	CFish *pFish = (CFish *)pStruct;
-	Assert( pFish );
+	CFish *fish = (CFish *)pStruct;
+	Assert( fish );
 
-	const Vector &v = pFish->GetAbsOrigin();
-	Vector origin = pFish->m_poolOrigin;
+	const Vector &v = fish->GetAbsOrigin();
+	Vector origin = fish->m_poolOrigin;
 
 	pOut->m_Float = v.x - origin.x;
 }
 
 void SendProxy_FishOriginY( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID )
 {
-	CFish *pFish = (CFish *)pStruct;
-	Assert( pFish );
+	CFish *fish = (CFish *)pStruct;
+	Assert( fish );
 
-	const Vector &v = pFish->GetAbsOrigin();
-	Vector origin = pFish->m_poolOrigin;
+	const Vector &v = fish->GetAbsOrigin();
+	Vector origin = fish->m_poolOrigin;
 
 	pOut->m_Float = v.y - origin.y;
 }
@@ -517,9 +517,9 @@ void CFish::ResetVisible( void )
 /**
  * Add this fish to our visible vector
  */
-void CFish::AddVisible( CFish *pFish )
+void CFish::AddVisible( CFish *fish )
 {
-	m_visible.AddToTail( pFish );
+	m_visible.AddToTail( fish );
 }
 
 

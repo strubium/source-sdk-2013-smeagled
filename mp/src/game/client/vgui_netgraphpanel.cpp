@@ -850,9 +850,9 @@ void CNetGraphPanel::DrawTextFields( int graphvalue, int x, int y, int w, netban
 	// Draw legend
 	if ( graphvalue >= 3 )
 	{
-		int textTall_ = g_pMatSystemSurface->GetFontTall( m_hFontSmall );
+		int textTall = g_pMatSystemSurface->GetFontTall( m_hFontSmall );
 
-		y = saveY - textTall_ - 5;
+		y = saveY - textTall - 5;
 		int cw, ch;
 		g_pMatSystemSurface->GetTextSize( m_hFontSmall, L"otherplayersWWW", cw, ch );
 		if ( x - cw < 0 )
@@ -865,25 +865,25 @@ void CNetGraphPanel::DrawTextFields( int graphvalue, int x, int y, int w, netban
 		}
 
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 0, 0, 255, 255, "localplayer" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 0, 255, 0, 255, "otherplayers" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 255, 0, 0, 255, "entities" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 255, 255, 0, 255, "sounds" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 0, 255, 255, 255, "events" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 128, 128, 0, 255, "usermessages" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 0, 128, 128, 255, "entmessages" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 128, 0, 0, 255, "stringcmds" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 0, 128, 0, 255, "stringtables" );
-		y -= textTall_;
+		y -= textTall;
 		g_pMatSystemSurface->DrawColoredText( m_hFontSmall, x, y, 0, 0, 128, 255, "voice" );
-		y -= textTall_;
+		y -= textTall;
 	}
 	else
 	{

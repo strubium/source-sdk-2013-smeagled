@@ -210,8 +210,8 @@ void CCoreDispSurface::Init( void )
 
 	m_PointStartIndex = -1;
 	VectorClear( m_PointStart );
-	VectorClear( m_sAxis );
-	VectorClear( m_tAxis );
+	VectorClear( sAxis );
+	VectorClear( tAxis );
 
 	for( i = 0; i < 4; i++ )
 	{

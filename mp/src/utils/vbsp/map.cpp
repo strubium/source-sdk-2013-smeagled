@@ -2021,12 +2021,12 @@ void CMapFile::CheckForInstances( const char *pszFileName )
 			char *pInstanceFile = ValueForKey( &entities[ i ], "file" );
 			if ( pInstanceFile[ 0 ] )
 			{
-				char	path[ MAX_PATH ];
+				char	InstancePath[ MAX_PATH ];
 				bool	bLoaded = false;
 
-				if ( DeterminePath( pszFileName, pInstanceFile, path ) )
+				if ( DeterminePath( pszFileName, pInstanceFile, InstancePath ) )
 				{
-					if ( LoadMapFile( path ) )
+					if ( LoadMapFile( InstancePath ) )
 					{
 						MergeInstance( &entities[ i ], g_LoadingMap );
 						delete g_LoadingMap;
@@ -2248,8 +2248,8 @@ void CMapFile::MergeBrushSides( entity_t *pInstanceEntity, CMapFile *Instance, V
 			mapdispinfo_t	*disp = side->pMapDisp;
 				
 			disp->brushSideID = side->id;
-			Vector temp = disp->startPosition;
-			VectorTransform( temp, InstanceMatrix, disp->startPosition );
+			Vector	inPoint = disp->startPosition;
+			VectorTransform( inPoint, InstanceMatrix, disp->startPosition );
 
 			disp->face.originalface = side;
 			disp->face.texinfo = side->texinfo;
@@ -2403,9 +2403,9 @@ void CMapFile::MergeEntities( entity_t *pInstanceEntity, CMapFile *Instance, Vec
 			GDclass *EntClass = GD.BeginInstanceRemap( pEntity, NameFixup, InstanceOrigin, InstanceAngle );
 			if ( EntClass )
 			{
-				for( int j = 0; j < EntClass->GetVariableCount(); j++ )
+				for( int i = 0; i < EntClass->GetVariableCount(); i++ )
 				{
-					GDinputvariable *EntVar = EntClass->GetVariableAt( j );
+					GDinputvariable *EntVar = EntClass->GetVariableAt( i );
 					char *pValue = ValueForKey( entity, ( char * )EntVar->GetName() );
 					if ( GD.RemapKeyValue( EntVar->GetName(), pValue, temp, FixupStyle ) )
 					{

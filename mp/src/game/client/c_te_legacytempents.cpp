@@ -113,7 +113,7 @@ void C_LocalTempEntity::Prepare( const model_t *pmodel, float time )
 {
 	Interp_SetupMappings( GetVarMapping() );
 
-	m_index = -1;
+	index = -1;
 	Clear();
 
 	// Use these to set per-frame and termination conditions / actions
@@ -153,7 +153,7 @@ void C_LocalTempEntity::SetAcceleration( const Vector &vecVelocity )
 // Purpose: 
 // Output : int
 //-----------------------------------------------------------------------------
-int C_LocalTempEntity::DrawStudioModel( int fl )
+int C_LocalTempEntity::DrawStudioModel( int flags )
 {
 	VPROF_BUDGET( "C_LocalTempEntity::DrawStudioModel", VPROF_BUDGETGROUP_MODEL_RENDERING );
 	int drawn = 0;
@@ -168,15 +168,15 @@ int C_LocalTempEntity::DrawStudioModel( int fl )
 
 	if ( m_pfnDrawHelper )
 	{
-		drawn = ( *m_pfnDrawHelper )( this, fl );
+		drawn = ( *m_pfnDrawHelper )( this, flags );
 	}
 	else
 	{
 		drawn = modelrender->DrawModel( 
-			fl,
+			flags, 
 			this,
 			MODEL_INSTANCE_INVALID,
-			m_index,
+			index, 
 			GetModel(),
 			GetAbsOrigin(),
 			GetAbsAngles(),
@@ -191,7 +191,7 @@ int C_LocalTempEntity::DrawStudioModel( int fl )
 // Purpose: 
 // Input  : flags - 
 //-----------------------------------------------------------------------------
-int	C_LocalTempEntity::DrawModel( int drawflags )
+int	C_LocalTempEntity::DrawModel( int flags )
 {
 	int drawn = 0;
 
@@ -238,7 +238,7 @@ int	C_LocalTempEntity::DrawModel( int drawflags )
 			);
 		break;
 	case mod_studio:
-		drawn = DrawStudioModel( drawflags );
+		drawn = DrawStudioModel( flags );
 		break;
 	default:
 		break;
@@ -966,7 +966,7 @@ int BreakModelDrawHelper( C_LocalTempEntity *entity, int flags )
 	sInfo.flags = flags;
 	sInfo.pRenderable = entity;
 	sInfo.instance = MODEL_INSTANCE_INVALID;
-	sInfo.entity_index = entity->m_index;
+	sInfo.entity_index = entity->index;
 	sInfo.pModel = entity->GetModel();
 	sInfo.origin = entity->GetRenderOrigin();
 	sInfo.angles = entity->GetRenderAngles();
@@ -1097,7 +1097,7 @@ void CTempEnts::BreakModel( const Vector &pos, const QAngle &angles, const Vecto
 	}
 }
 
-void CTempEnts::PhysicsProp( int modelindex, int skin, const Vector& pos, const QAngle &angles, const Vector& vel, int flags, int enteffects )
+void CTempEnts::PhysicsProp( int modelindex, int skin, const Vector& pos, const QAngle &angles, const Vector& vel, int flags, int effects )
 {
 	C_PhysPropClientside *pEntity = C_PhysPropClientside::CreateNew();
 	
@@ -1117,7 +1117,7 @@ void CTempEnts::PhysicsProp( int modelindex, int skin, const Vector& pos, const 
 	pEntity->SetAbsOrigin( pos );
 	pEntity->SetAbsAngles( angles );
 	pEntity->SetPhysicsMode( PHYSICS_MULTIPLAYER_CLIENTSIDE );
-	pEntity->SetEffects( enteffects );
+	pEntity->SetEffects( effects );
 
 	if ( !pEntity->Initialize() )
 	{
@@ -2300,7 +2300,7 @@ int CTempEnts::AddVisibleTempEntity( C_LocalTempEntity *pEntity )
 	//if ( engine->IsBoxInViewCluster( mins, maxs ) )
 	{
 		// Temporary entities have no corresponding element in cl_entitylist
-		pEntity->m_index = -1;
+		pEntity->index = -1;
 		
 		// Add to list
 		if( pEntity->m_RenderGroup == RENDER_GROUP_OTHER )
@@ -2941,6 +2941,7 @@ void CTempEnts::MuzzleFlash_Shotgun_NPC( ClientEntityHandle_t hEntity, int attac
 	QAngle	angles;
 
 	Vector	forward;
+	int		i;
 
 	// Setup the origin.
 	Vector	origin;
@@ -3007,7 +3008,7 @@ void CTempEnts::MuzzleFlash_Shotgun_NPC( ClientEntityHandle_t hEntity, int attac
 
 	int	numEmbers = random->RandomInt( 4, 8 );
 
-	for ( int i = 0; i < numEmbers; i++ )
+	for ( i = 0; i < numEmbers; i++ )
 	{
 		pTrailParticle = (TrailParticle *) pTrails->AddParticle( sizeof( TrailParticle ), g_Mat_SMG_Muzzleflash[0], origin );
 			

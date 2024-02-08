@@ -13,9 +13,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
-#pragma warning(disable:4996) 
-#include <sphelper.h>
-#pragma warning(default: 4996)
+#include "sphelper.h"
 #include "spddkhlp.h"
 // ATL Header Files
 #include <atlbase.h>
@@ -651,14 +649,14 @@ SR_RESULT ExtractPhonemes( const char *wavname, CSpDynamicString& text, CSentenc
 
 		if ( wordRules.Size() <= 0 )
 		{
-			pfnPrint( "Error:  Text %s contained no usable words\n", text.m_psz );
+			pfnPrint( "Error:  Text %s contained no usable words\n", text );
 			return result;
 		}
 
 		// Build all word to word transitions in the grammar
 		if ( !BuildRules( cpRecoGrammar, &hStateRoot, &wordRules ) )
 		{
-			pfnPrint( "Error:  Rule set for %s could not be generated\n", text.m_psz );
+			pfnPrint( "Error:  Rule set for %s could not be generated\n", text );
 			return result;
 		}
 	}

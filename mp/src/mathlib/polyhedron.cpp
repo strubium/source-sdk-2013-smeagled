@@ -1015,12 +1015,12 @@ CPolyhedron *ClipLinkedGeometry( GeneratePolyhedronFromPlanes_UnorderedPolygonLL
 
 			//Scan for onplane points connected to only other onplane/dead points, these points get downgraded to dead status.
 			{
-				GeneratePolyhedronFromPlanes_UnorderedPointLL *pActivePointWalk_ = pAllPoints;
+				GeneratePolyhedronFromPlanes_UnorderedPointLL *pActivePointWalk = pAllPoints;
 				do
 				{
-					if(pActivePointWalk_->pPoint->planarity == POINT_ONPLANE )
+					if( pActivePointWalk->pPoint->planarity == POINT_ONPLANE )
 					{
-						GeneratePolyhedronFromPlanes_LineLL *pOnPlaneLineWalk = pActivePointWalk_->pPoint->pConnectedLines;
+						GeneratePolyhedronFromPlanes_LineLL *pOnPlaneLineWalk = pActivePointWalk->pPoint->pConnectedLines;
 						GeneratePolyhedronFromPlanes_LineLL *pStartLineWalk = pOnPlaneLineWalk;
 						bool bDead = true; //assume it's dead and disprove
 						do
@@ -1047,7 +1047,7 @@ CPolyhedron *ClipLinkedGeometry( GeneratePolyhedronFromPlanes_UnorderedPolygonLL
 
 						if( bDead )
 						{
-							pActivePointWalk_->pPoint->planarity = POINT_DEAD;
+							pActivePointWalk->pPoint->planarity = POINT_DEAD;
 
 							pOnPlaneLineWalk = pStartLineWalk;
 
@@ -1059,8 +1059,8 @@ CPolyhedron *ClipLinkedGeometry( GeneratePolyhedronFromPlanes_UnorderedPolygonLL
 							} while( pOnPlaneLineWalk != pStartLineWalk );
 						}
 					}
-					pActivePointWalk_ = pActivePointWalk_->pNext;
-				} while(pActivePointWalk_);
+					pActivePointWalk = pActivePointWalk->pNext;
+				} while( pActivePointWalk );
 			}
 #ifdef _DEBUG
 			PlaneCutHistory.AddToTail( &pOutwardFacingPlanes[iCurrentPlane * 4] );

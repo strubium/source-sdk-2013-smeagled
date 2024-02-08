@@ -9,7 +9,7 @@
 #define HL2MP_PLAYER_H
 #pragma once
 
-#include "hl2mp_playeranimstate.h"
+class C_HL2MP_Player;
 #include "c_basehlplayer.h"
 #include "hl2mp_player_shared.h"
 #include "beamdraw.h"
@@ -37,6 +37,7 @@ public:
 	virtual int DrawModel( int flags );
 	virtual void AddEntity( void );
 
+	QAngle GetAnimEyeAngles( void ) { return m_angEyeAngles; }
 	Vector GetAttackSpread( CBaseCombatWeapon *pWeapon, CBaseEntity *pTarget = NULL );
 
 
@@ -57,6 +58,7 @@ public:
 	virtual void CreateLightEffects( void ) {}
 	virtual bool ShouldReceiveProjectedTextures( int flags );
 	virtual void PostDataUpdate( DataUpdateType_t updateType );
+	virtual void PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
 	virtual void PreThink( void );
 	virtual void DoImpactEffect( trace_t &tr, int nDamageType );
 	IRagdoll* GetRepresentativeRagdoll() const;
@@ -72,6 +74,7 @@ public:
 	void	Initialize( void );
 	int		GetIDTarget() const;
 	void	UpdateIDTarget( void );
+	void	PrecacheFootStepSounds( void );
 	const char	*GetPlayerModelSoundPrefix( void );
 
 	HL2MPPlayerState State_Get() const;
@@ -81,15 +84,13 @@ public:
 	void StopWalking( void );
 	bool IsWalking( void ) { return m_fIsWalking; }
 
-	virtual void UpdateClientSideAnimation();
-	void DoAnimationEvent( PlayerAnimEvent_t event, int nData = 0 );
-	virtual void CalculateIKLocks( float currentTime );
+	virtual void PostThink( void );
 
 private:
 	
 	C_HL2MP_Player( const C_HL2MP_Player & );
 
-	CHL2MPPlayerAnimState *m_PlayerAnimState;
+	CPlayerAnimState m_PlayerAnimState;
 
 	QAngle	m_angEyeAngles;
 

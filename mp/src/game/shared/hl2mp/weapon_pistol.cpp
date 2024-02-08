@@ -15,7 +15,6 @@
 #endif
 
 #include "weapon_hl2mpbasehlmpcombatweapon.h"
-#include "weapon_hl2mpbase_machinegun.h"
 
 #define	PISTOL_FASTEST_REFIRE_TIME		0.1f
 #define	PISTOL_FASTEST_DRY_REFIRE_TIME	0.2f
@@ -31,10 +30,10 @@
 // CWeaponPistol
 //-----------------------------------------------------------------------------
 
-class CWeaponPistol : public CHL2MPMachineGun
+class CWeaponPistol : public CBaseHL2MPCombatWeapon
 {
 public:
-	DECLARE_CLASS( CWeaponPistol, CHL2MPMachineGun );
+	DECLARE_CLASS( CWeaponPistol, CBaseHL2MPCombatWeapon );
 
 	CWeaponPistol(void);
 
@@ -85,7 +84,10 @@ public:
 	{
 		return 0.5f; 
 	}
+	
+#ifndef CLIENT_DLL
 	DECLARE_ACTTABLE();
+#endif
 
 private:
 	CNetworkVar( float,	m_flSoonestPrimaryAttack );
@@ -125,24 +127,23 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS( weapon_pistol, CWeaponPistol );
 PRECACHE_WEAPON_REGISTER( weapon_pistol );
 
+#ifndef CLIENT_DLL
 acttable_t CWeaponPistol::m_acttable[] = 
 {
-	{ ACT_MP_STAND_IDLE,				ACT_HL2MP_IDLE_PISTOL,					false },
-	{ ACT_MP_CROUCH_IDLE,				ACT_HL2MP_IDLE_CROUCH_PISTOL,			false },
-
-	{ ACT_MP_RUN,						ACT_HL2MP_RUN_PISTOL,					false },
-	{ ACT_MP_CROUCHWALK,				ACT_HL2MP_WALK_CROUCH_PISTOL,			false },
-
-	{ ACT_MP_ATTACK_STAND_PRIMARYFIRE,	ACT_HL2MP_GESTURE_RANGE_ATTACK_PISTOL,	false },
-	{ ACT_MP_ATTACK_CROUCH_PRIMARYFIRE,	ACT_HL2MP_GESTURE_RANGE_ATTACK_PISTOL,	false },
-
-	{ ACT_MP_RELOAD_STAND,				ACT_HL2MP_GESTURE_RELOAD_PISTOL,		false },
-	{ ACT_MP_RELOAD_CROUCH,				ACT_HL2MP_GESTURE_RELOAD_PISTOL,		false },
-
-	{ ACT_MP_JUMP,						ACT_HL2MP_JUMP_PISTOL,					false },
+	{ ACT_HL2MP_IDLE,					ACT_HL2MP_IDLE_PISTOL,					false },
+	{ ACT_HL2MP_RUN,					ACT_HL2MP_RUN_PISTOL,					false },
+	{ ACT_HL2MP_IDLE_CROUCH,			ACT_HL2MP_IDLE_CROUCH_PISTOL,			false },
+	{ ACT_HL2MP_WALK_CROUCH,			ACT_HL2MP_WALK_CROUCH_PISTOL,			false },
+	{ ACT_HL2MP_GESTURE_RANGE_ATTACK,	ACT_HL2MP_GESTURE_RANGE_ATTACK_PISTOL,	false },
+	{ ACT_HL2MP_GESTURE_RELOAD,			ACT_HL2MP_GESTURE_RELOAD_PISTOL,		false },
+	{ ACT_HL2MP_JUMP,					ACT_HL2MP_JUMP_PISTOL,					false },
+	{ ACT_RANGE_ATTACK1,				ACT_RANGE_ATTACK_PISTOL,				false },
 };
 
+
 IMPLEMENT_ACTTABLE( CWeaponPistol );
+
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -198,15 +199,15 @@ void CWeaponPistol::PrimaryAttack( void )
 	m_flLastAttackTime = gpGlobals->curtime;
 	m_flSoonestPrimaryAttack = gpGlobals->curtime + PISTOL_FASTEST_REFIRE_TIME;
 
-	CBasePlayer *pPlayerOwner  = ToBasePlayer( GetOwner() );
+	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 
-	if( pPlayerOwner  )
+	if( pOwner )
 	{
 		// Each time the player fires the pistol, reset the view punch. This prevents
 		// the aim from 'drifting off' when the player fires very quickly. This may
 		// not be the ideal way to achieve this, but it's cheap and it works, which is
 		// great for a feature we're evaluating. (sjb)
-		pPlayerOwner ->ViewPunchReset();
+		pOwner->ViewPunchReset();
 	}
 
 	BaseClass::PrimaryAttack();
@@ -220,13 +221,13 @@ void CWeaponPistol::PrimaryAttack( void )
 //-----------------------------------------------------------------------------
 void CWeaponPistol::UpdatePenaltyTime( void )
 {
-	CBasePlayer *pPlayerOwner  = ToBasePlayer( GetOwner() );
+	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 
-	if ( pPlayerOwner  == NULL )
+	if ( pOwner == NULL )
 		return;
 
 	// Check our penalty time decay
-	if ( ( ( pPlayerOwner ->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
+	if ( ( ( pOwner->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
 	{
 		m_flAccuracyPenalty -= gpGlobals->frametime;
 		m_flAccuracyPenalty = clamp( m_flAccuracyPenalty, 0.0f, PISTOL_ACCURACY_MAXIMUM_PENALTY_TIME );
@@ -263,12 +264,12 @@ void CWeaponPistol::ItemPostFrame( void )
 	if ( m_bInReload )
 		return;
 	
-	CBasePlayer *pPlayerOwner  = ToBasePlayer( GetOwner() );
+	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 
-	if ( pPlayerOwner  == NULL )
+	if ( pOwner == NULL )
 		return;
 	
-	if ( pPlayerOwner ->m_nButtons & IN_ATTACK2 )
+	if ( pOwner->m_nButtons & IN_ATTACK2 )
 	{
 		m_flLastAttackTime = gpGlobals->curtime + PISTOL_FASTEST_REFIRE_TIME;
 		m_flSoonestPrimaryAttack = gpGlobals->curtime + PISTOL_FASTEST_REFIRE_TIME;
@@ -276,11 +277,11 @@ void CWeaponPistol::ItemPostFrame( void )
 	}
 
 	//Allow a refire as fast as the player can click
-	if ( ( ( pPlayerOwner ->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
+	if ( ( ( pOwner->m_nButtons & IN_ATTACK ) == false ) && ( m_flSoonestPrimaryAttack < gpGlobals->curtime ) )
 	{
 		m_flNextPrimaryAttack = gpGlobals->curtime - 0.1f;
 	}
-	else if ( ( pPlayerOwner ->m_nButtons & IN_ATTACK ) && ( m_flNextPrimaryAttack < gpGlobals->curtime ) && ( m_iClip1 <= 0 ) )
+	else if ( ( pOwner->m_nButtons & IN_ATTACK ) && ( m_flNextPrimaryAttack < gpGlobals->curtime ) && ( m_iClip1 <= 0 ) )
 	{
 		DryFire();
 	}
@@ -312,7 +313,6 @@ bool CWeaponPistol::Reload( void )
 	if ( fRet )
 	{
 		WeaponSound( RELOAD );
-		ToHL2MPPlayer(GetOwner())->DoAnimationEvent( PLAYERANIMEVENT_RELOAD );
 		m_flAccuracyPenalty = 0.0f;
 	}
 	return fRet;

@@ -186,7 +186,7 @@ C_Team *GetLocalTeam( void )
 	if ( !player )
 		return NULL;
 	
-	return GetPlayersTeam( player->m_index );
+	return GetPlayersTeam( player->index );
 }
 
 //-----------------------------------------------------------------------------

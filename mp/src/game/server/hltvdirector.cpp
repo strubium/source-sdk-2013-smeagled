@@ -378,17 +378,17 @@ void CHLTVDirector::StartBestPlayerCameraShot()
 		// search for camera ranking events
 		if ( Q_strcmp( dc.m_Event->GetName(), "hltv_rank_entity") == 0 )
 		{
-			int rankindex = dc.m_Event->GetInt("index"); 
+			int index = dc.m_Event->GetInt("index"); 
 
-			if ( rankindex < MAX_PLAYERS )
+			if ( index < MAX_PLAYERS )
 			{
-				flPlayerRanking[rankindex] += dc.m_Event->GetFloat("rank" );
+				flPlayerRanking[index] += dc.m_Event->GetFloat("rank" );
 
 				// find best camera
-				if ( flPlayerRanking[rankindex] > flBestRank )
+				if ( flPlayerRanking[index] > flBestRank )
 				{
-					iBestCamera = rankindex;
-					flBestRank = flPlayerRanking[rankindex];
+					iBestCamera = index;
+					flBestRank = flPlayerRanking[index];
 					iBestTarget = dc.m_Event->GetInt("target"); 
 				}
 			}
@@ -487,14 +487,14 @@ void CHLTVDirector::StartBestFixedCameraShot( bool bForce )
 		// search for camera ranking events
 		if ( Q_strcmp( dc.m_Event->GetName(), "hltv_rank_camera") == 0 )
 		{
-			int rankingindex = dc.m_Event->GetInt("index"); 
-			flCameraRanking[rankingindex] += dc.m_Event->GetFloat("rank" );
+			int index = dc.m_Event->GetInt("index"); 
+			flCameraRanking[index] += dc.m_Event->GetFloat("rank" );
 
 			// find best camera
-			if ( flCameraRanking[rankingindex] > flBestRank )
+			if ( flCameraRanking[index] > flBestRank )
 			{
-				iBestCamera = rankingindex;
-				flBestRank = flCameraRanking[rankingindex];
+				iBestCamera = index;
+				flBestRank = flCameraRanking[index];
 				iBestTarget = dc.m_Event->GetInt("target"); 
 			}
 		}
@@ -686,11 +686,11 @@ bool CHLTVDirector::SetCameraMan( int iPlayerIndex )
 
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
-		CBasePlayer *pPlayerSpec = UTIL_PlayerByIndex( i );
+		CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
 
-		if ( pPlayerSpec && pPlayerSpec->GetTeamNumber() == TEAM_SPECTATOR && !pPlayerSpec->IsFakeClient() )
+		if ( pPlayer && pPlayer->GetTeamNumber() == TEAM_SPECTATOR && !pPlayer->IsFakeClient() )
 		{
-			filter.AddRecipient( pPlayerSpec );
+			filter.AddRecipient( pPlayer );
 		}
 	}
 

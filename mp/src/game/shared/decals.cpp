@@ -111,11 +111,11 @@ int CDecalEmitterSystem::GetDecalIndexForName( char const *decalname )
 	if ( !decalname  || !decalname[ 0 ] )
 		return -1;
 
-	int decalidx = m_Decals.Find( decalname );
-	if ( decalidx == m_Decals.InvalidIndex() )
+	int idx = m_Decals.Find( decalname );
+	if ( idx == m_Decals.InvalidIndex() )
 		return -1;
 
-	DecalEntry *e = &m_Decals[ decalidx ];
+	DecalEntry *e = &m_Decals[ idx ];
 	Assert( e );
 	int count = e->indices.Count();
 	if ( count <= 0 )

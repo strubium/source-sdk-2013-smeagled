@@ -60,6 +60,8 @@
 #include "c_baseobject.h"
 #endif
 
+#include "deferred/deferred_shared_common.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -2779,7 +2781,7 @@ bool C_BaseAnimating::SetupBones( matrix3x4_t *pBoneToWorldOut, int nMaxBones, i
 		// Prevent spammage!!!
 		if ( gpGlobals->realtime >= lastWarning + 1.0f )
 		{
-			DevMsgRT( "*** ERROR: Bone access not allowed (entity %i:%s)\n", m_index, GetClassname() );
+			DevMsgRT( "*** ERROR: Bone access not allowed (entity %i:%s)\n", index, GetClassname() );
 			lastWarning = gpGlobals->realtime;
 		}
 	}
@@ -3281,9 +3283,9 @@ void C_BaseAnimating::DoInternalDrawModel( ClientModelRenderInfo_t *pInfo, DrawM
 				if ( VPhysicsGetObject() )
 				{
 					static color32 debugColorPhys = {255,0,0,0};
-					matrix3x4_t m;
-					VPhysicsGetObject()->GetPositionMatrix( &m );
-					engine->DebugDrawPhysCollide( pCollide->solids[0], NULL, m, debugColorPhys );
+					matrix3x4_t matrix;
+					VPhysicsGetObject()->GetPositionMatrix( &matrix );
+					engine->DebugDrawPhysCollide( pCollide->solids[0], NULL, matrix, debugColorPhys );
 				}
 			}
 		}
@@ -3328,7 +3330,7 @@ int C_BaseAnimating::InternalDrawModel( int flags )
 	pInfo->flags = flags;
 	pInfo->pRenderable = this;
 	pInfo->instance = GetModelInstance();
-	pInfo->entity_index = m_index;
+	pInfo->entity_index = index;
 	pInfo->pModel = GetModel();
 	pInfo->origin = GetRenderOrigin();
 	pInfo->angles = GetRenderAngles();
@@ -3387,29 +3389,44 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 		{
 			Vector vAttachment, vAng;
 			QAngle angles;
-			GetAttachment(1, vAttachment, angles); // set 1 instead of "attachment"
+			GetAttachment( 1, vAttachment, angles );
+
 			AngleVectors(angles, &vAng);
 			vAttachment += vAng * 2;
 
-			dlight_t *dl = effects->CL_AllocDlight(m_index);
-			dl->origin = vAttachment;
+			// Make an elight
+			/*dlight_t *el = effects->CL_AllocDlight( index );
+			el->origin = vAttachment;
+			el->radius = random->RandomFloat( 64, 128 ); 
+			el->decay = el->radius / 0.05f;
+			el->die = gpGlobals->curtime + 0.05f;
+			el->color.r = 255;
+			el->color.g = 192;
+			el->color.b = 64;
+			el->color.exponent = 3;*/
+			//el->decay = 512.0f;
 
-			// Original color values
-			int originalR = 252;
-			int originalG = 238;
-			int originalB = 128;
+			def_light_temp_t *l = new def_light_temp_t( 0.1f );
 
-			// Randomize color components within the range of +/- 20
-			dl->color.r = originalR + random->RandomInt(-20, 20);
-			dl->color.g = originalG + random->RandomInt(-20, 20);
-			dl->color.b = originalB + random->RandomInt(0, 0);
+			l->ang = vec3_angle;
+			l->pos = vAttachment;
 
-			// Randomize the die value by +/- 0.01
-			dl->die = gpGlobals->curtime + 0.05f + random->RandomFloat(-0.01f, 0.01f);
-			dl->radius = random->RandomFloat(245.0f, 256.0f);
+			l->col_diffuse = Vector( 0.964705882f, 0.82745098f, 0.403921569f );
+			//l->col_ambient = Vector(20, 20, 20); //GetColor_Ambient();
 
-			// Randomize the decay value
-			dl->decay = random->RandomFloat(400.0f, 600.0f);
+			l->flRadius = random->RandomFloat( 64, 128 );
+			l->flFalloffPower = 1.0f;
+
+			l->iVisible_Dist = l->flRadius * 2;
+			l->iVisible_Range = l->flRadius * 2;
+			l->iShadow_Dist = l->flRadius;
+			l->iShadow_Range = l->flRadius;
+
+			l->iFlags >>= DEFLIGHTGLOBAL_FLAGS_MAX_SHARED_BITS;
+			l->iFlags <<= DEFLIGHTGLOBAL_FLAGS_MAX_SHARED_BITS;
+			l->iFlags |= DEFLIGHT_SHADOW_ENABLED;
+
+			GetLightingManager()->AddTempLight( l );
 		}
 	}
 }
@@ -3912,12 +3929,12 @@ void C_BaseAnimating::FireEvent( const Vector& origin, const QAngle& angles, int
 		{
 			if ( MainViewOrigin().DistToSqr( GetAbsOrigin() ) < (256 * 256) )
 			{
-				Vector brassAttachOrigin;
-				QAngle brassAttachAngles; 
+				Vector attachOrigin;
+				QAngle attachAngles; 
 				
-				if( GetAttachment( 2, brassAttachOrigin, brassAttachAngles ) )
+				if( GetAttachment( 2, attachOrigin, attachAngles ) )
 				{
-					tempents->EjectBrass( brassAttachOrigin, brassAttachAngles, GetAbsAngles(), atoi( options ) );
+					tempents->EjectBrass( attachOrigin, attachAngles, GetAbsAngles(), atoi( options ) );
 				}
 			}
 		}

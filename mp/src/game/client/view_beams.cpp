@@ -438,7 +438,7 @@ int	Beam_t::GetFxBlend( )
 extern bool g_bRenderingScreenshot;
 extern ConVar r_drawviewmodel;
 
-int Beam_t::DrawModel( int )
+int Beam_t::DrawModel( int flags )
 {
 #ifdef PORTAL
 	if ( ( !g_pPortalRender->IsRenderingPortal() && !m_bDrawInMainRender ) || 

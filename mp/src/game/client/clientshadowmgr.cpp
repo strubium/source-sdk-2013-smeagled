@@ -1180,6 +1180,7 @@ CClientShadowMgr::CClientShadowMgr() :
 //-----------------------------------------------------------------------------
 CON_COMMAND_F( r_shadowdir, "Set shadow direction", FCVAR_CHEAT )
 {
+	Vector dir;
 	if ( args.ArgC() == 1 )
 	{
 		Vector dir = s_ClientShadowMgr.GetShadowDirection();
@@ -1189,7 +1190,6 @@ CON_COMMAND_F( r_shadowdir, "Set shadow direction", FCVAR_CHEAT )
 
 	if ( args.ArgC() == 4 )
 	{
-		Vector dir;
 		dir.x = atof( args[1] );
 		dir.y = atof( args[2] );
 		dir.z = atof( args[3] );
@@ -1199,6 +1199,8 @@ CON_COMMAND_F( r_shadowdir, "Set shadow direction", FCVAR_CHEAT )
 
 CON_COMMAND_F( r_shadowangles, "Set shadow angles", FCVAR_CHEAT )
 {
+	Vector dir;
+	QAngle angles;
 	if (args.ArgC() == 1)
 	{
 		Vector dir = s_ClientShadowMgr.GetShadowDirection();
@@ -1210,8 +1212,6 @@ CON_COMMAND_F( r_shadowangles, "Set shadow angles", FCVAR_CHEAT )
 
 	if (args.ArgC() == 4)
 	{
-		Vector dir;
-		QAngle angles;
 		angles.x = atof( args[1] );
 		angles.y = atof( args[2] );
 		angles.z = atof( args[3] );
@@ -1291,7 +1291,7 @@ bool CClientShadowMgr::Init()
 	SetShadowBlobbyCutoffArea( 0.005 );
 
 	bool bTools = CommandLine()->CheckParm( "-tools" ) != NULL;
-	m_nMaxDepthTextureShadows = bTools ? 4 : 4;	// 4 shadow maps in game
+	m_nMaxDepthTextureShadows = bTools ? 4 : 1;	// Just one shadow depth texture in games, more in tools
 
 	bool bLowEnd = ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() < 80 );
 
@@ -2931,7 +2931,8 @@ void CClientShadowMgr::PreRender()
 
 	m_bUpdatingDirtyShadows = true;
 
-	for (unsigned short i = m_DirtyShadows.FirstInorder(); i != m_DirtyShadows.InvalidIndex(); )
+	unsigned short i = m_DirtyShadows.FirstInorder();
+	while ( i != m_DirtyShadows.InvalidIndex() )
 	{
 		MDLCACHE_CRITICAL_SECTION();
 		ClientShadowHandle_t& handle = m_DirtyShadows[ i ];
@@ -3173,9 +3174,7 @@ void CClientShadowMgr::UpdateProjectedTextureInternal( ClientShadowHandle_t hand
 		VPROF_BUDGET( "CClientShadowMgr::UpdateProjectedTextureInternal", VPROF_BUDGETGROUP_SHADOW_DEPTH_TEXTURING );
 
 		Assert( ( shadow.m_Flags & SHADOW_FLAGS_SHADOW ) == 0 );
-
-		// FIXME: VS2022 Port - Why?
-		//ClientShadow_t& shadow = m_Shadows[handle];
+		ClientShadow_t& shadow = m_Shadows[handle];
 
 		shadowmgr->EnableShadow( shadow.m_ShadowHandle, true );
 
@@ -3971,11 +3970,11 @@ void CClientShadowMgr::ComputeShadowDepthTextures( const CViewSetup &viewSetup )
 		}
 
 		// Set depth bias factors specific to this flashlight
-		CMatRenderContextPtr ctx( materials );
-		ctx->SetShadowDepthBiasFactors( flashlightState.m_flShadowSlopeScaleDepthBias, flashlightState.m_flShadowDepthBias );
+		CMatRenderContextPtr pRenderContext( materials );
+		pRenderContext->SetShadowDepthBiasFactors( flashlightState.m_flShadowSlopeScaleDepthBias, flashlightState.m_flShadowDepthBias );
 
 		// Render to the shadow depth texture with appropriate view
-		g_pView->UpdateShadowDepthTexture( m_DummyColorTexture, shadowDepthTexture, shadowView );
+		view->UpdateShadowDepthTexture( m_DummyColorTexture, shadowDepthTexture, shadowView );
 
 		// Associate the shadow depth texture and stencil bit with the flashlight for use during scene rendering
 		shadowmgr->SetFlashlightDepthTexture( shadow.m_ShadowHandle, shadowDepthTexture, 0 );

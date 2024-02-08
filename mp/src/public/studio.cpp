@@ -565,7 +565,7 @@ int	studiohdr_t::GetActivityListVersion( void )
 	virtualmodel_t *pVModel = (virtualmodel_t *)GetVirtualModel();
 	Assert( pVModel );
 
-	int actlistversion = activitylistversion;
+	int version = activitylistversion;
 
 	int i;
 	for (i = 1; i < pVModel->m_group.Count(); i++)
@@ -575,13 +575,13 @@ int	studiohdr_t::GetActivityListVersion( void )
 
 		Assert( pStudioHdr );
 
-		actlistversion = min( actlistversion, pStudioHdr->activitylistversion );
+		version = min( version, pStudioHdr->activitylistversion );
 	}
 
-	return actlistversion;
+	return version;
 }
 
-void studiohdr_t::SetActivityListVersion( int listversion ) const
+void studiohdr_t::SetActivityListVersion( int version ) const
 {
 	activitylistversion = version;
 
@@ -601,7 +601,7 @@ void studiohdr_t::SetActivityListVersion( int listversion ) const
 
 		Assert( pStudioHdr );
 
-		pStudioHdr->SetActivityListVersion( listversion );
+		pStudioHdr->SetActivityListVersion( version );
 	}
 }
 
@@ -1444,9 +1444,9 @@ void CStudioHdr::RunFlexRules( const float *src, float *dest )
 				{
 					int m = pops->d.index;
 					int km = k - m;
-					for ( int ii = km + 1; ii < k; ++ii )
+					for ( int i = km + 1; i < k; ++i )
 					{
-						stack[ km ] *= stack[ ii ];
+						stack[ km ] *= stack[ i ];
 					}
 					k = k - m + 1;
 				}
@@ -1456,9 +1456,9 @@ void CStudioHdr::RunFlexRules( const float *src, float *dest )
 					int m = pops->d.index;
 					int km = k - m;
 					float dv = stack[ km ];
-					for ( int ii = km + 1; ii < k; ++ii )
+					for ( int i = km + 1; i < k; ++i )
 					{
-						dv *= stack[ ii ];
+						dv *= stack[ i ];
 					}
 					stack[ km - 1 ] *= 1.0f - dv;
 					k -= m;

@@ -575,16 +575,16 @@ void DumpCollideToGlView( vcollide_t *pCollide, const char *pFilename )
 	Msg("Writing %s...\n", pFilename );
 
 	FILE *fp = fopen( pFilename, "w" );
-	for (int j = 0; j < pCollide->solidCount; ++j)
+	for (int i = 0; i < pCollide->solidCount; ++i)
 	{
 		Vector *outVerts;
-		int vertCount = s_pPhysCollision->CreateDebugMesh( pCollide->solids[j], &outVerts );
+		int vertCount = s_pPhysCollision->CreateDebugMesh( pCollide->solids[i], &outVerts );
 		int triCount = vertCount / 3;
 		int vert = 0;
 
-		unsigned char r = (j & 1) * 64 + 64;
-		unsigned char g = (j & 2) * 64 + 64;
-		unsigned char b = (j & 4) * 64 + 64;
+		unsigned char r = (i & 1) * 64 + 64;
+		unsigned char g = (i & 2) * 64 + 64;
+		unsigned char b = (i & 4) * 64 + 64;
 
 		float fr = r / 255.0f;
 		float fg = g / 255.0f;
@@ -686,12 +686,12 @@ public:
 	bool FindOrLoadIfValid( const char *pMaterialName, int *pIndex )
 	{
 		*pIndex = -1;
-		int matindex = m_Textures.Find(pMaterialName);
+		int index = m_Textures.Find(pMaterialName);
 		bool bFound = false;
-		if ( matindex != m_Textures.InvalidIndex() )
+		if ( index != m_Textures.InvalidIndex() )
 		{
 			bFound = true;
-			*pIndex = matindex;
+			*pIndex = index;
 		}
 		else
 		{

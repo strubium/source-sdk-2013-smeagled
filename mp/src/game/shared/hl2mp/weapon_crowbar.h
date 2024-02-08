@@ -35,7 +35,10 @@ public:
 
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();
+
+#ifndef CLIENT_DLL
 	DECLARE_ACTTABLE();
+#endif
 
 	CWeaponCrowbar();
 
@@ -64,3 +67,4 @@ private:
 
 
 #endif // HL2MP_WEAPON_CROWBAR_H
+

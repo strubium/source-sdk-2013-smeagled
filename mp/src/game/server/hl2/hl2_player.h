@@ -15,14 +15,6 @@
 #include "simtimer.h"
 #include "soundenvelope.h"
 
-// In HL2MP we need to inherit from  BaseMultiplayerPlayer!
-#if defined ( HL2MP )
-#include "basemultiplayerplayer.h"
-#define BASEPLAYERCLASS CBaseMultiplayerPlayer
-#else
-#define BASEPLAYERCLASS CBasePlayer
-#endif
-
 class CAI_Squad;
 class CPropCombineBall;
 
@@ -83,10 +75,10 @@ public:
 //=============================================================================
 // >> HL2_PLAYER
 //=============================================================================
-class CHL2_Player : public BASEPLAYERCLASS
+class CHL2_Player : public CBasePlayer
 {
 public:
-	DECLARE_CLASS( CHL2_Player, BASEPLAYERCLASS );
+	DECLARE_CLASS( CHL2_Player, CBasePlayer );
 
 	CHL2_Player();
 	~CHL2_Player( void );

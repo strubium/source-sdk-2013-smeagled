@@ -123,9 +123,9 @@ const char *MapEntity_ParseToken( const char *data, char *newToken )
 
 		Q_memset( s_BraceCharacters, 0, sizeof(s_BraceCharacters) );
 
-		for ( const char *ch = s_BraceChars; *ch; ch++ )
+		for ( const char *c = s_BraceChars; *c; c++ )
 		{
-			s_BraceCharacters[(unsigned)*ch] = true;
+			s_BraceCharacters[(unsigned)*c] = true;
 		}
 	}
 		

@@ -555,9 +555,9 @@ void CMapOverview::DrawMapPlayerTrails()
 	if ( m_fTrailUpdateInterval <= 0 )
 		return; // turned off
 
-	for (int plidx=0; plidx<MAX_PLAYERS; plidx++)
+	for (int i=0; i<MAX_PLAYERS; i++)
 	{
-		MapPlayer_t *player = &m_Players[plidx];
+		MapPlayer_t *player = &m_Players[i];
 
 		if ( !CanPlayerBeSeen(player) )
 			continue;

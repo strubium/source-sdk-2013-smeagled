@@ -642,11 +642,13 @@ lighting and save into final map format
 void FinalLightFace( int iThread, int facenum )
 {
 	dface_t	        *f;
+	int		        i, j, k;
 	facelight_t	    *fl;
 	float		    minlight;
 	int			    lightstyles;
 	LightingValue_t lb[NUM_BUMP_VECTS + 1], v[NUM_BUMP_VECTS + 1];
 	unsigned char   *pdata[NUM_BUMP_VECTS + 1];
+	int				bumpSample;
 	radial_t	    *rad = NULL;
 	radial_t	    *prad = NULL;
 
@@ -695,7 +697,7 @@ void FinalLightFace( int iThread, int facenum )
 	CUtlRBTree< float, int >	m_Green( 0, 256, FloatLess );
 	CUtlRBTree< float, int >	m_Blue( 0, 256, FloatLess );
 
-	for (int k=0 ; k < lightstyles; k++ )
+	for (k=0 ; k < lightstyles; k++ )
 	{
 		m_Red.RemoveAll();
 		m_Green.RemoveAll();
@@ -732,7 +734,7 @@ void FinalLightFace( int iThread, int facenum )
 		// it isn't going to use those positions (see loop over bumpSample below)
 		// The file offset is correctly computed to only store space for 1 set
 		// of light data if we don't have bumped lighting.
-		for(int bumpSample = 0; bumpSample < bumpSampleCount; ++bumpSample )
+		for( bumpSample = 0; bumpSample < bumpSampleCount; ++bumpSample )
 		{
 			pdata[bumpSample] = &(*pdlightdata)[f->lightofs + (k * bumpSampleCount + bumpSample) * fl->numluxels*4]; 
 		}
@@ -741,7 +743,7 @@ void FinalLightFace( int iThread, int facenum )
 		Vector avg( 0.0f, 0.0f, 0.0f );
 		int avgCount = 0;
 
-		for (int j=0 ; j<fl->numluxels; j++)
+		for (j=0 ; j<fl->numluxels; j++)
 		{
 			// garymct - direct lighting
 			bool baseSampleOk = true;
@@ -778,7 +780,7 @@ void FinalLightFace( int iThread, int facenum )
 					StaticDispMgr()->SampleRadial( facenum, prad, fl->luxel[j], j, v, bumpSampleCount, true );
 				}
 
-				for(int bumpSample = 0; bumpSample < bumpSampleCount; ++bumpSample )
+				for( bumpSample = 0; bumpSample < bumpSampleCount; ++bumpSample )
 				{
 					lb[bumpSample].AddLight( v[bumpSample] );
 				}
@@ -786,7 +788,7 @@ void FinalLightFace( int iThread, int facenum )
 
 			if ( bDisp && g_bDumpPatches )
 			{
-				for(int bumpSample = 0; bumpSample < bumpSampleCount; ++bumpSample )
+				for( bumpSample = 0; bumpSample < bumpSampleCount; ++bumpSample )
 				{
 					DumpDispLuxels( facenum, lb[bumpSample].m_vecLighting, j, bumpSample );
 				}
@@ -794,7 +796,7 @@ void FinalLightFace( int iThread, int facenum )
 
 			if (fl->numsamples == 0)
 			{
-				for(int i = 0; i < bumpSampleCount; i++ )
+				for( i = 0; i < bumpSampleCount; i++ )
 				{
 					lb[i].Init( 255, 0, 0 );
 				}
@@ -806,7 +808,7 @@ void FinalLightFace( int iThread, int facenum )
 			{
 				// clip from the bottom first
 				// garymct: minlight is a per entity minimum light value?
-				for(int i=0; i<3; i++ )
+				for( i=0; i<3; i++ )
 				{
 					lb[bumpSample].m_vecLighting[i] = max( lb[bumpSample].m_vecLighting[i], minlight );
 				}

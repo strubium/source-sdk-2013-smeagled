@@ -207,9 +207,9 @@ int CStripper::CreateStrip(int tri, int vert, int maxlen, int *pswaps,
         fstartcw = !fstartcw;
 
         // find the next natural edge
-        int nextedge = (fstartcw ? vert + 2 : vert + 1) % 3;
-        nexttri = m_ptriinfo[tri].neighbortri[nextedge];
-        nextvert = m_ptriinfo[tri].neighboredge[nextedge];
+        int edge = (fstartcw ? vert + 2 : vert + 1) % 3;
+        nexttri = m_ptriinfo[tri].neighbortri[edge];
+        nextvert = m_ptriinfo[tri].neighboredge[edge];
 
         bool fswap = false;
         if(nexttri == -1 || m_pused[nexttri])
@@ -457,19 +457,19 @@ int CStripper::CreateLongStrip(STRIPLIST *pstriplist, WORD **ppstripindices)
 
     // add first strip
     istriplist = pstriplist->begin();
-    const STRIPVERTS &stripverts_ = **istriplist;
+    const STRIPVERTS &stripverts = **istriplist;
 
     // first strip should be cw
-    assert(FIsStripCW(stripverts_));
+    assert(FIsStripCW(stripverts));
 
-    for(int ivert = 0; ivert < StripLen(stripverts_); ivert++)
+    for(int ivert = 0; ivert < StripLen(stripverts); ivert++)
     {
-        pstripindices[numstripindices++] = stripverts_[ivert];
-        vertcache.Add(1, stripverts_[ivert]);
+        pstripindices[numstripindices++] = stripverts[ivert];
+        vertcache.Add(1, stripverts[ivert]);
     }
 
     // kill first dude
-    delete & stripverts_;
+    delete &stripverts;
     pstriplist->erase(istriplist);
 
     // add all the others

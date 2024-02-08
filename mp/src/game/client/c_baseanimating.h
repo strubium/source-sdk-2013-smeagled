@@ -79,9 +79,7 @@ public:
 	QAngle	m_angRotation;
 	Vector	m_vOriginVelocity;
 	int		m_nLastFramecount : 31;
-
-	// FIXME: VS2022 Port - Why was 'm_bAnglesComputed' an int? 
-	bool	m_bAnglesComputed : true;
+	int		m_bAnglesComputed : 1;
 };
 
 

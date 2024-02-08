@@ -159,7 +159,7 @@ void CGlowOverlay::UpdateSkyGlowObstruction( float zFar, bool bCacheFullSceneSta
 	if ( PixelVisibility_IsAvailable() )
 	{
 		// Trace a ray at the object. 
-		Vector pos = CurrentViewOrigin() + m_vDirection * zFar * 0.99f;
+		Vector pos = CurrentViewOrigin() + m_vDirection * zFar * 0.999f;
 
 		// UNDONE: Can probably do only the pixelvis query in this case if you can figure out where
 		// to put it - or save the position of this trace
@@ -206,7 +206,7 @@ void CGlowOverlay::UpdateGlowObstruction( const Vector &vToGlow, bool bCacheFull
 	{
 		if ( m_bInSky )
 		{
-			const CViewSetup *pViewSetup = g_pView->GetViewSetup();
+			const CViewSetup *pViewSetup = view->GetViewSetup();
 			Vector pos = CurrentViewOrigin() + m_vDirection * (pViewSetup->zFar * 0.999f);
 			pixelvis_queryparams_t params;
 			params.Init( pos, m_flProxyRadius, CalcGlowAspect() );
@@ -388,7 +388,7 @@ void CGlowOverlay::Draw( bool bCacheFullSceneState )
 
 		//Get our diagonal radius
 		float radius = (vRight+vUp).Length();
-		if ( R_CullSphere( g_pView->GetFrustum(), 5, &vBasePt, radius ) )
+		if ( R_CullSphere( view->GetFrustum(), 5, &vBasePt, radius ) )
 			continue;
 
 		// Get our material (deferred default load)
@@ -405,43 +405,39 @@ void CGlowOverlay::Draw( bool bCacheFullSceneState )
 			pHDRColorScaleVar->SetFloatValue( m_flHDRColorScale );
 		}
 
-
 		// Draw the sprite.
-		{
-			IMesh *pMesh = pRenderContext->GetDynamicMesh( false, 0, 0, m_Sprites[iSprite].m_pMaterial );
+		IMesh *pMesh = pRenderContext->GetDynamicMesh( false, 0, 0, m_Sprites[iSprite].m_pMaterial );
 
-			CMeshBuilder builder;
-			builder.Begin( pMesh, MATERIAL_QUADS, 1 );
+		CMeshBuilder builder;
+		builder.Begin( pMesh, MATERIAL_QUADS, 1 );
 		
-			Vector vPt;
+		Vector vPt;
 		
-			vPt = vBasePt - vRight + vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color4f( VectorExpand(vColor), 1 );
-			builder.TexCoord2f( 0, 0, 1 );
-			builder.AdvanceVertex();
+		vPt = vBasePt - vRight + vUp;
+		builder.Position3fv( vPt.Base() );
+		builder.Color4f( VectorExpand(vColor), 1 );
+		builder.TexCoord2f( 0, 0, 1 );
+		builder.AdvanceVertex();
 		
-			vPt = vBasePt + vRight + vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color4f( VectorExpand(vColor), 1 );
-			builder.TexCoord2f( 0, 1, 1 );
-			builder.AdvanceVertex();
+		vPt = vBasePt + vRight + vUp;
+		builder.Position3fv( vPt.Base() );
+		builder.Color4f( VectorExpand(vColor), 1 );
+		builder.TexCoord2f( 0, 1, 1 );
+		builder.AdvanceVertex();
 		
-			vPt = vBasePt + vRight - vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color4f( VectorExpand(vColor), 1 );
-			builder.TexCoord2f( 0, 1, 0 );
-			builder.AdvanceVertex();
+		vPt = vBasePt + vRight - vUp;
+		builder.Position3fv( vPt.Base() );
+		builder.Color4f( VectorExpand(vColor), 1 );
+		builder.TexCoord2f( 0, 1, 0 );
+		builder.AdvanceVertex();
 		
-			vPt = vBasePt - vRight - vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color4f( VectorExpand(vColor), 1 );
-			builder.TexCoord2f( 0, 0, 0 );
-			builder.AdvanceVertex();
+		vPt = vBasePt - vRight - vUp;
+		builder.Position3fv( vPt.Base() );
+		builder.Color4f( VectorExpand(vColor), 1 );
+		builder.TexCoord2f( 0, 0, 0 );
+		builder.AdvanceVertex();
 		
-			builder.End( false, true );
-		}
-
+		builder.End( false, true );
 
 		if( bWireframe )
 		{

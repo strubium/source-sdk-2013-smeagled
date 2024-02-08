@@ -564,21 +564,22 @@ public:
 					image = GetImageAtIndex(i);
 				}
 
-				int imageWide = 0, tall_ = 0, wide_ = 0;
+				int imageWide = 0, tall = 0;
+				int wide;
 				if (image)
 				{
-					image->GetContentSize(imageWide, tall_);
+					image->GetContentSize(imageWide, tall);
 				}
 				if (maxWidth >= 0)
 				{
-					wide_ = maxWidth;
+					wide = maxWidth;
 				}
 				else
 				{
-					wide_ = imageWide;
+					wide = imageWide;
 				}
 
-				xpos += wide_;//max(maxWidth,wide);
+				xpos += wide;//max(maxWidth,wide);
 				surface()->DrawOutlinedRect( xpos, 0, xpos, GetTall() );
 			}
 		}

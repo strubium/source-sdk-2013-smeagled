@@ -54,6 +54,8 @@
 #include "econ_wearable.h"
 #endif
 
+#include "deferred/flashlighteffect_deferred.h"
+
 // NVNT haptics system interface
 #include "haptics/ihaptics.h"
 
@@ -468,8 +470,8 @@ void C_BasePlayer::Spawn( void )
 	ClearFlags();
 	AddFlag( FL_CLIENT );
 
-	int fx = GetEffects() & EF_NOSHADOW;
-	SetEffects( fx );
+	int effects = GetEffects() & EF_NOSHADOW;
+	SetEffects( effects );
 
 	m_iFOV	= 0;	// init field of view.
 
@@ -697,19 +699,15 @@ surfacedata_t* C_BasePlayer::GetGroundSurface()
 	VectorCopy( start, end );
 
 	// Straight down
-	start.z += 1;
 	end.z -= 64;
 
 	// Fill in default values, just in case.
 	
 	Ray_t ray;
-	Vector mins = GetPlayerMins();
-	Vector maxs = GetPlayerMaxs();
-	maxs.z = mins.z + 1;
-	ray.Init( start, end, mins, maxs);
+	ray.Init( start, end, GetPlayerMins(), GetPlayerMaxs() );
 
 	trace_t	trace;
-	UTIL_TraceRay( ray, MASK_PLAYERSOLID, this, COLLISION_GROUP_PLAYER_MOVEMENT, &trace );
+	UTIL_TraceRay( ray, MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_PLAYER_MOVEMENT, &trace );
 
 	if ( trace.fraction == 1.0f )
 		return NULL;	// no ground
@@ -806,7 +804,7 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 		if ( g_nKillCamMode )
 			iLocalPlayerIndex = g_nKillCamTarget1;
 
-		if ( iLocalPlayerIndex == m_index )
+		if ( iLocalPlayerIndex == index )
 		{
 			Assert( s_pLocalPlayer == NULL );
 			s_pLocalPlayer = this;
@@ -903,7 +901,7 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 				gameeventmanager->FireEventClientSide( pEvent );
 			}
 
-			g_pView->FreezeFrame(0);
+			view->FreezeFrame(0);
 
 			ConVar *pVar = (ConVar *)cvar->FindVar( "snd_soundmixer" );
 			pVar->Revert();
@@ -1231,7 +1229,8 @@ void C_BasePlayer::UpdateFlashlight()
 		if (!m_pFlashlight)
 		{
 			// Turned on the headlight; create it.
-			m_pFlashlight = new CFlashlightEffect(m_index);
+			//m_pFlashlight = new CFlashlightEffect(index);
+			m_pFlashlight = new CFlashlightEffectDeferred(index);
 
 			if (!m_pFlashlight)
 				return;
@@ -1262,11 +1261,11 @@ void C_BasePlayer::Flashlight( void )
 	UpdateFlashlight();
 
 	// Check for muzzle flash and apply to view model
-	C_BaseAnimating *ve = this;
+	/*C_BaseAnimating *ve = this;
 	if ( GetObserverMode() == OBS_MODE_IN_EYE )
 	{
 		ve = dynamic_cast< C_BaseAnimating* >( GetObserverTarget() );
-	}
+	}*/
 }
 
 
@@ -1593,11 +1592,11 @@ void C_BasePlayer::CalcRoamingView(Vector& eyeOrigin, QAngle& eyeAngles, float& 
 	
 	if ( spec_track.GetInt() > 0 )
 	{
-		C_BaseEntity *target_ =  ClientEntityList().GetBaseEntity( spec_track.GetInt() );
+		C_BaseEntity *target =  ClientEntityList().GetBaseEntity( spec_track.GetInt() );
 
-		if ( target_ )
+		if ( target )
 		{
-			Vector v = target_->GetAbsOrigin(); v.z += 54;
+			Vector v = target->GetAbsOrigin(); v.z += 54;
 			QAngle a; VectorAngles( v - eyeOrigin, a );
 
 			NormalizeAngles( a );
@@ -1693,7 +1692,7 @@ void C_BasePlayer::CalcFreezeCamView( Vector& eyeOrigin, QAngle& eyeAngles, floa
 		}
 
 		m_bSentFreezeFrame = true;
-		g_pView->FreezeFrame( spec_freeze_time.GetFloat() );
+		view->FreezeFrame( spec_freeze_time.GetFloat() );
 	}
 }
 
@@ -2090,8 +2089,8 @@ void C_BasePlayer::GetToolRecordingState( KeyValues *msg )
 	static CameraRecordingState_t state;
 	state.m_flFOV = GetFOV();
 
-	float flZNear = g_pView->GetZNear();
-	float flZFar = g_pView->GetZFar();
+	float flZNear = view->GetZNear();
+	float flZFar = view->GetZFar();
 	CalcView( state.m_vecEyePosition, state.m_vecEyeAngles, flZNear, flZFar, state.m_flFOV );
 	state.m_bThirdPerson = !engine->IsPaused() && ::input->CAM_IsThirdPerson();
 

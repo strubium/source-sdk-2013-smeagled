@@ -753,8 +753,8 @@ CON_COMMAND( explode, "Kills the player with explosive damage" )
 //------------------------------------------------------------------------------
 void killvector_helper( const CCommand &args, bool bExplode )
 {
-	CBasePlayer *pClientPlayer = UTIL_GetCommandClient();
-	if ( pClientPlayer && args.ArgC() == 5 )
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if ( pPlayer && args.ArgC() == 5 )
 	{
 		// Find the matching netname.
 		for ( int iClient = 1; iClient <= gpGlobals->maxClients; iClient++ )
@@ -930,16 +930,6 @@ void CC_Player_SetModel( const CCommand &args )
 	{
 		static char szName[256];
 		Q_snprintf( szName, sizeof( szName ), "models/%s.mdl", args[1] );
-		
-		// Arsenio2044: fix game crashing if a model isnt precached
-		int i = modelinfo->GetModelIndex(szName);
-		if (i == -1)
-		{
-			Msg("%i/%s - %s:  CC_Player_SetModel:  not precached: %s\n", pPlayer->entindex(),
-				STRING(pPlayer->GetEntityName()), pPlayer->GetClassname(), szName);
-			return;
-		}
-
 		pPlayer->SetModel( szName );
 		UTIL_SetSize(pPlayer, VEC_HULL_MIN, VEC_HULL_MAX);
 	}

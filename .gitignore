@@ -66,3 +66,4 @@ config.cfg
 
 # shader files
 *.tmp
+.DS_Store

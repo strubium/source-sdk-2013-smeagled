@@ -333,8 +333,8 @@ void RagdollSetupCollisions( ragdoll_t &ragdoll, vcollide_t *pCollide, int model
 			const char *pBlock = pParse->GetCurrentBlockName();
 			if ( !strcmpi( pBlock, "collisionrules" ) )
 			{
-				IPhysicsCollisionSet *pColSet = physics->FindOrCreateCollisionSet( modelIndex, ragdoll.listCount );
-				CRagdollCollisionRules rules(pColSet);
+				IPhysicsCollisionSet *pSet = physics->FindOrCreateCollisionSet( modelIndex, ragdoll.listCount );
+				CRagdollCollisionRules rules(pSet);
 				pParse->ParseCustom( (void *)&rules, &rules );
 				bFoundRules = true;
 			}
@@ -1047,14 +1047,14 @@ void CRagdollLRURetirement::MoveToTopOfLRU( CBaseAnimating *pRagdoll, bool bImpo
 		{
 			int iIndex = m_LRUImportantRagdolls.Head();
 
-			CBaseAnimating *pRag = m_LRUImportantRagdolls[iIndex].Get();
+			CBaseAnimating *pRagdoll = m_LRUImportantRagdolls[iIndex].Get();
 
-			if ( pRag )
+			if ( pRagdoll )
 			{
 #ifdef CLIENT_DLL
-				pRag->SUB_Remove();
+				pRagdoll->SUB_Remove();
 #else
-				pRag->SUB_StartFadeOut( 0 );
+				pRagdoll->SUB_StartFadeOut( 0 );
 #endif
 				m_LRUImportantRagdolls.Remove(iIndex);
 			}

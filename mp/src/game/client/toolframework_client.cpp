@@ -13,7 +13,7 @@
 #include "iviewrender.h"
 #include "materialsystem/imaterialvar.h"
 
-extern IViewRender *g_pView;
+extern IViewRender *view;
 
 class CToolFrameworkClient : public CBaseGameSystemPerFrame
 {
@@ -257,7 +257,7 @@ void ToolFramework_RecordMaterialParams( IMaterial *pMaterial )
 	if ( !clienttools->IsInRecordingMode() )
 		return;
 
-	C_BaseEntity *pEnt = g_pView->GetCurrentlyDrawingEntity();
+	C_BaseEntity *pEnt = view->GetCurrentlyDrawingEntity();
 	if ( !pEnt || !pEnt->IsToolRecording() )
 		return;
 

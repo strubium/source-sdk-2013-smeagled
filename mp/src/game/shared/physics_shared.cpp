@@ -593,14 +593,14 @@ IPhysicsObject *PhysCreateWorld_Shared( CBaseEntity *pWorld, vcollide_t *pWorldC
 	if ( !physenv )
 		return NULL;
 
-	int defSurfaceData = physprops->GetSurfaceIndex( "default" );
+	int surfaceData = physprops->GetSurfaceIndex( "default" );
 
 	objectparams_t params = defaultParams;
 	params.pGameData = static_cast<void *>(pWorld);
 	params.pName = "world";
 
 	IPhysicsObject *pWorldPhysics = physenv->CreatePolyObjectStatic( 
-		pWorldCollide->solids[0], defSurfaceData, vec3_origin, vec3_angle, &params );
+		pWorldCollide->solids[0], surfaceData, vec3_origin, vec3_angle, &params );
 
 	// hint - saves vphysics some work
 	pWorldPhysics->SetCallbackFlags( pWorldPhysics->GetCallbackFlags() | CALLBACK_NEVER_DELETED );
@@ -1003,7 +1003,7 @@ void PhysFrictionSound( CBaseEntity *pEntity, IPhysicsObject *pObject, float ene
 	if ( psurf->sounds.scrapeSmooth && phit->audio.roughnessFactor < psurf->audio.roughThreshold )
 	{
 		soundName = psurf->sounds.scrapeSmooth;
-		soundHandle = &psurf->soundhandles.scrapeSmooth;
+		soundHandle = &psurf->soundhandles.scrapeRough;
 	}
 
 	const char *pSoundName = physprops->GetString( soundName );

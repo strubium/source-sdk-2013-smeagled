@@ -114,8 +114,7 @@ void CHL2MPMachineGun::PrimaryAttack( void )
 	}
 
 	SendWeaponAnim( GetPrimaryAttackActivity() );
-	ToHL2MPPlayer(pPlayer)->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
-
+	pPlayer->SetAnimation( PLAYER_ATTACK1 );
 }
 
 //-----------------------------------------------------------------------------
@@ -239,4 +238,5 @@ void CHL2MPMachineGun::ItemPostFrame( void )
 
 	BaseClass::ItemPostFrame();
 }
+
 

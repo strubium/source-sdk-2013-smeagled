@@ -2434,13 +2434,13 @@ void CBaseEntity::VPhysicsUpdatePusher( IPhysicsObject *pPhysics )
 	if ( !PhysIsFinalTick() )
 		return;
 
-	Vector shadoworigin;
-	QAngle shadowangles;
+	Vector origin;
+	QAngle angles;
 
 	// physics updated the shadow, so check to see if I got blocked
 	// NOTE: SOLID_BSP cannont compute consistent collisions wrt vphysics, so 
 	// don't allow vphysics to block.  Assume game physics has handled it.
-	if ( GetSolid() != SOLID_BSP && pPhysics->GetShadowPosition( &shadoworigin, &shadowangles) )
+	if ( GetSolid() != SOLID_BSP && pPhysics->GetShadowPosition( &origin, &angles ) )
 	{
 		CUtlVector<CBaseEntity *> list;
 		GetAllInHierarchy( this, list );
@@ -2991,9 +2991,9 @@ FORCEINLINE bool NamesMatch( const char *pszQuery, string_t nameToMatch )
 		// simple ascii case conversion
 		if ( cName == cQuery )
 			;
-		else if ( (unsigned char)(cName - 'A') <= (unsigned char)('Z' - 'A') && (unsigned char)(cName - 'A' + 'a') == cQuery )
+		else if ( cName - 'A' <= (unsigned char)'Z' - 'A' && cName - 'A' + 'a' == cQuery )
 			;
-		else if ( (unsigned char)(cName - 'a') <= (unsigned char)('z' - 'a') && (unsigned char)(cName - 'a' + 'A') == cQuery )
+		else if ( cName - 'a' <= (unsigned char)'z' - 'a' && cName - 'a' + 'A' == cQuery )
 			;
 		else
 			break;
@@ -5341,7 +5341,7 @@ public:
 		{
 			const char *target = "", *action = "Use";
 			variant_t value;
-			float delay = 0;
+			int delay = 0;
 
 			target = STRING( AllocPooledString(command.Arg( 1 ) ) );
 

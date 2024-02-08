@@ -64,11 +64,6 @@ ConVar debug_latch_reset_onduck( "debug_latch_reset_onduck", "1", FCVAR_CHEAT );
 // [MD] I'll remove this eventually. For now, I want the ability to A/B the optimizations.
 bool g_bMovementOptimizations = true;
 
-// Camera Bob ConVar's 
-ConVar cl_viewbob_enabled	( "cl_viewbob_enabled", "1", 0, "Viewbobbing Oscillation Toggle" );
-ConVar cl_viewbob_timer		( "cl_viewbob_timer", "10", 0, "Speed of Viewbob Oscillation" );
-ConVar cl_viewbob_scale		( "cl_viewbob_scale", "0.03", 0, "Magnitude of Viewbob Oscillation" );
-
 // Roughly how often we want to update the info about the ground surface we're on.
 // We don't need to do this very often.
 #define CATEGORIZE_GROUND_SURFACE_INTERVAL			0.3f
@@ -925,10 +920,10 @@ void CBasePlayer::UpdateWetness()
 //-----------------------------------------------------------------------------
 void CGameMovement::CategorizeGroundSurface( trace_t &pm )
 {
-	IPhysicsSurfaceProps *physsurfprops = MoveHelper()->GetSurfaceProps();
+	IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
 	player->m_surfaceProps = pm.surface.surfaceProps;
-	player->m_pSurfaceData = physsurfprops->GetSurfaceData( player->m_surfaceProps );
-	physsurfprops->GetPhysicsProperties( player->m_surfaceProps, NULL, NULL, &player->m_surfaceFriction, NULL );
+	player->m_pSurfaceData = physprops->GetSurfaceData( player->m_surfaceProps );
+	physprops->GetPhysicsProperties( player->m_surfaceProps, NULL, NULL, &player->m_surfaceFriction, NULL );
 	
 	// HACKHACK: Scale this to fudge the relationship between vphysics friction values and player friction values.
 	// A value of 0.8f feels pretty normal for vphysics, whereas 1.0f is normal for players.
@@ -1919,12 +1914,7 @@ void CGameMovement::WalkMove( void )
 	// Copy movement amounts
 	fmove = mv->m_flForwardMove;
 	smove = mv->m_flSideMove;
-	if ( cl_viewbob_enabled.GetBool() && !engine->IsPaused() )
-	{
-		float xoffset = sin( gpGlobals->curtime * cl_viewbob_timer.GetFloat() ) * player->GetAbsVelocity().Length() * cl_viewbob_scale.GetFloat() / 100;
-		float yoffset = sin( 2 * gpGlobals->curtime * cl_viewbob_timer.GetFloat() ) * player->GetAbsVelocity().Length() * cl_viewbob_scale.GetFloat() / 400;
-		player->ViewPunch( QAngle( xoffset, yoffset, 0 ) );
-	}
+
 	// Zero out z components of movement vectors
 	if ( g_bMovementOptimizations )
 	{
@@ -2848,9 +2838,12 @@ inline bool CGameMovement::OnLadder( trace_t &trace )
 
 //=============================================================================
 // HPE_BEGIN
+// [sbodenbender] make ladders easier to climb in cstrike
 //=============================================================================
+#if defined (CSTRIKE_DLL)
 ConVar sv_ladder_dampen ( "sv_ladder_dampen", "0.2", FCVAR_REPLICATED, "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f );
 ConVar sv_ladder_angle( "sv_ladder_angle", "-0.707", FCVAR_REPLICATED, "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f, true, 1.0f );
+#endif
 //=============================================================================
 // HPE_END
 //=============================================================================
@@ -3879,8 +3872,8 @@ void CGameMovement::CategorizePosition( void )
 		if ( player->IsInAVehicle() == false )
 		{
 			// If our gamematerial has changed, tell any player surface triggers that are watching
-			IPhysicsSurfaceProps *physsurfprops = MoveHelper()->GetSurfaceProps();
-			surfacedata_t *pSurfaceProp = physsurfprops->GetSurfaceData( pm.surface.surfaceProps );
+			IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
+			surfacedata_t *pSurfaceProp = physprops->GetSurfaceData( pm.surface.surfaceProps );
 			char cCurrGameMaterial = pSurfaceProp->game.material;
 			if ( !player->GetGroundEntity() )
 			{
@@ -4198,6 +4191,9 @@ void CGameMovement::FinishUnDuckJump( trace_t &trace )
 //-----------------------------------------------------------------------------
 void CGameMovement::FinishDuck( void )
 {
+	if ( player->GetFlags() & FL_DUCKING )
+		return;
+
 	player->AddFlag( FL_DUCKING );
 	player->m_Local.m_bDucked = true;
 	player->m_Local.m_bDucking = false;

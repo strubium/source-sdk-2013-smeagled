@@ -103,7 +103,7 @@ CVoiceGameMgr::CVoiceGameMgr()
 {
 	m_UpdateInterval = 0;
 	m_nMaxPlayers = 0;
-	m_iProximityDistance = 10;
+	m_iProximityDistance = -1;
 }
 
 
@@ -225,15 +225,15 @@ void CVoiceGameMgr::UpdateMasks()
 
 		CPlayerBitVec gameRulesMask;
 		CPlayerBitVec ProximityMask;
-		bool		bProximity = true;
+		bool		bProximity = false;
 		if( g_PlayerModEnable[iClient] )
 		{
 			// Build a mask of who they can hear based on the game rules.
 			for(int iOtherClient=0; iOtherClient < m_nMaxPlayers; iOtherClient++)
 			{
-				CBaseEntity *pOtherEnt = UTIL_PlayerByIndex(iOtherClient+1);
-				if(pOtherEnt && pOtherEnt->IsPlayer() &&
-					(bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pOtherEnt, bProximity )) )
+				CBaseEntity *pEnt = UTIL_PlayerByIndex(iOtherClient+1);
+				if(pEnt && pEnt->IsPlayer() && 
+					(bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pEnt, bProximity )) )
 				{
 					gameRulesMask[iOtherClient] = true;
 					ProximityMask[iOtherClient] = bProximity;

@@ -785,10 +785,10 @@ void CNavMesh::RaiseAreasWithInternalObstacles()
 						// yes, this edge is blocked
 						iEdgesBlocked++;
 						// keep track of obstacle height and start and end distance for this edge
-						float obstacleZdelta = nodeFrom->GetPosition()->z + obstacleHeight;
-						if (obstacleZdelta > obstacleZThisDir[iEdge] )
+						float obstacleZ = nodeFrom->GetPosition()->z + obstacleHeight;
+						if ( obstacleZ > obstacleZThisDir[iEdge] )
 						{							
-							obstacleZThisDir[iEdge] = obstacleZdelta;
+							obstacleZThisDir[iEdge] = obstacleZ;
 						}
 						obstacleStartDistThisDir = MIN( nodeFrom->m_obstacleStartDist[dir], obstacleStartDistThisDir );
 						obstacleEndDistThisDir = MAX( nodeFrom->m_obstacleEndDist[dir], obstacleEndDistThisDir );
@@ -1015,8 +1015,8 @@ bool CNavMesh::CreateObstacleTopAreaIfNecessary( CNavArea *area, CNavArea *areaO
 								if ( areaOther->Contains( *nodeTowardOtherArea->GetPosition() ) )
 								{
 									float z = areaOther->GetZ( nodeTowardOtherArea->GetPosition()->x, nodeTowardOtherArea->GetPosition()->y );
-									float deltaZabs = fabs( nodeTowardOtherArea->GetPosition()->z - z );
-									if ( deltaZabs < 2.0f )
+									float deltaZ = fabs( nodeTowardOtherArea->GetPosition()->z - z );
+									if ( deltaZ < 2.0f )
 									{
 										bInOtherArea = true;
 									}
@@ -1630,13 +1630,7 @@ static bool testStitchConnection( CNavArea *source, CNavArea *target, const Vect
 	else
 	{
 		// test going up ClimbUpHeight
-		
-		// FIXME: VS2022 Port
-		//        This line was here before, causing a warning, and thus an error
-		//		  I would normally just change the name, but I think it was preventing the second half of this if from being useful
-		// bool success = false;
-		// END OF FIXME
-
+		bool success = false;
 		for ( float height = StepHeight; height <= ClimbUpHeight; height += 1.0f )
 		{
 			trace_t tr;
@@ -3104,7 +3098,7 @@ bool CNavMesh::TestArea( CNavNode *node, int width, int height )
 	{
 		horizNode = vertNode;
 
-		for( int x_=0; x_<width; ++x_ )
+		for( int x=0; x<width; ++x )
 		{
 			// look for odd jump areas (3 points on the ground, 1 point floating much higher or lower)
 			if ( !TestForValidJumpArea( horizNode ) )
@@ -3131,21 +3125,21 @@ bool CNavMesh::TestArea( CNavNode *node, int width, int height )
 		const Vector *nw = node->GetPosition();
 
 		vertNode = node;
-		for( int y_=0; y_<height; ++y_ )
+		for( int y=0; y<height; ++y )
 		{
 			vertNode = vertNode->GetConnectedNode( SOUTH );
 		}
 		const Vector *sw = vertNode->GetPosition();
 
 		horizNode = node;
-		for( int x_=0; x_<width; ++x_ )
+		for( int x=0; x<width; ++x )
 		{
 			horizNode = horizNode->GetConnectedNode( EAST );
 		}
 		const Vector *ne = horizNode->GetPosition();
 
 		vertNode = horizNode;
-		for( int y_=0; y_<height; ++y_ )
+		for( int y=0; y<height; ++y )
 		{
 			vertNode = vertNode->GetConnectedNode( SOUTH );
 		}
@@ -3929,9 +3923,9 @@ bool CNavMesh::UpdateGeneration( float maxTime )
 					if ( s_unlitAreas.Count() )
 					{
 						Warning( "To see unlit areas:\n" );
-						for ( int iarea=0; iarea < s_unlitAreas.Count(); ++iarea )
+						for ( int sit=0; sit<s_unlitAreas.Count(); ++sit )
 						{
-							CNavArea *area = s_unlitAreas[ iarea ];
+							CNavArea *area = s_unlitAreas[ sit ];
 							Warning( "nav_unmark; nav_mark %d; nav_warp_to_mark;\n", area->GetID() );
 						}
 					}
@@ -4127,8 +4121,8 @@ CNavNode *CNavMesh::AddNode( const Vector &destPos, const Vector &normal, NavDir
 	// determine if there's a cliff nearby and set an attribute on this node
 	for ( int i = 0; i < NUM_DIRECTIONS; i++ )
 	{
-		NavDirType diri = (NavDirType) i;
-		if ( CheckCliff( node->GetPosition(), diri) )
+		NavDirType dir = (NavDirType) i;
+		if ( CheckCliff( node->GetPosition(), dir ) )
 		{
 			node->SetAttributes( node->GetAttributes() | NAV_MESH_CLIFF );
 			break;

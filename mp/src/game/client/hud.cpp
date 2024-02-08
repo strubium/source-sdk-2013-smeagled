@@ -1016,11 +1016,11 @@ bool CHud::LockRenderGroup( int iGroupIndex, CHudElement *pLocker /* = NULL */ )
 	if ( !DoesRenderGroupExist(iGroupIndex) )
 		return false;
 
-	int idx = m_RenderGroups.Find( iGroupIndex );
+	int i = m_RenderGroups.Find( iGroupIndex );
 
-	Assert( m_RenderGroups.IsValidIndex(idx) );
+	Assert( m_RenderGroups.IsValidIndex(i) );
 
-	CHudRenderGroup *group = m_RenderGroups.Element(idx);
+	CHudRenderGroup *group = m_RenderGroups.Element(i);
 
 	Assert( group );
 
@@ -1065,11 +1065,11 @@ bool CHud::UnlockRenderGroup( int iGroupIndex, CHudElement *pLocker /* = NULL */
 	if ( !DoesRenderGroupExist(iGroupIndex) )
 		return false;
 
-	int idx = m_RenderGroups.Find( iGroupIndex );
+	int i = m_RenderGroups.Find( iGroupIndex );
 
-	Assert( m_RenderGroups.IsValidIndex(idx) );
+	Assert( m_RenderGroups.IsValidIndex(i) );
 
-	CHudRenderGroup *group = m_RenderGroups.Element(idx);
+	CHudRenderGroup *group = m_RenderGroups.Element(i);
 
 	if ( group )
 	{

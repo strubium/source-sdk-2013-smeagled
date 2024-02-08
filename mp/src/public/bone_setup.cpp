@@ -933,8 +933,8 @@ static void CalcVirtualAnimation( virtualmodel_t *pVModel, const CStudioHdr *pSt
 	{
 		if (pStudioHdr->boneFlags(i) & boneMask)
 		{
-			int h = pSeqGroup->boneMap[i];
-			if (h >= 0 && pweight[h] > 0.0f)
+			int j = pSeqGroup->boneMap[i];
+			if (j >= 0 && pweight[j] > 0.0f)
 			{
 				if (animdesc.flags & STUDIO_DELTA)
 				{
@@ -943,13 +943,13 @@ static void CalcVirtualAnimation( virtualmodel_t *pVModel, const CStudioHdr *pSt
 				}
 				else if (pSeqLinearBones)
 				{
-					q[i] = pSeqLinearBones->quat(h);
-					pos[i] = pSeqLinearBones->pos(h);
+					q[i] = pSeqLinearBones->quat(j);
+					pos[i] = pSeqLinearBones->pos(j);
 				}
 				else 
 				{
-					q[i] = pSeqbone[h].quat;
-					pos[i] = pSeqbone[h].pos;
+					q[i] = pSeqbone[j].quat;
+					pos[i] = pSeqbone[j].pos;
 				}
 #ifdef STUDIO_ENABLE_PERF_COUNTERS
 				pStudioHdr->m_nPerfUsedBones++;
@@ -997,9 +997,10 @@ static void CalcVirtualAnimation( virtualmodel_t *pVModel, const CStudioHdr *pSt
 		matrix3x4_t *boneToWorld = g_MatrixPool.Alloc();
 		CBoneBitList boneComputed;
 
-		for (int o = 0; o < animdesc.numlocalhierarchy; o++)
+		int i;
+		for (i = 0; i < animdesc.numlocalhierarchy; i++)
 		{
-			mstudiolocalhierarchy_t *pHierarchy = animdesc.pHierarchy( o );
+			mstudiolocalhierarchy_t *pHierarchy = animdesc.pHierarchy( i );
 
 			if ( !pHierarchy )
 				break;
@@ -1053,6 +1054,7 @@ static void CalcAnimation( const CStudioHdr *pStudioHdr,	Vector *pos, Quaternion
 	mstudiobone_t *pbone = pStudioHdr->pBone( 0 );
 	const mstudiolinearbone_t *pLinearBones = pStudioHdr->pLinearBones();
 
+	int					i;
 	int					iFrame;
 	float				s;
 
@@ -1072,7 +1074,7 @@ static void CalcAnimation( const CStudioHdr *pStudioHdr,	Vector *pos, Quaternion
 	{
 		// Msg("zeroframe %s\n", animdesc.pszName() );
 		// pre initialize
-		for (int i = 0; i < pStudioHdr->numbones(); i++, pbone++, pweight++)
+		for (i = 0; i < pStudioHdr->numbones(); i++, pbone++, pweight++)
 		{
 			if (*pweight > 0 && (pStudioHdr->boneFlags(i) & boneMask))
 			{
@@ -1095,7 +1097,7 @@ static void CalcAnimation( const CStudioHdr *pStudioHdr,	Vector *pos, Quaternion
 	}
 
 	// BUGBUG: the sequence, the anim, and the model can have all different bone mappings.
-	for (int i = 0; i < pStudioHdr->numbones(); i++, pbone++, pweight++)
+	for (i = 0; i < pStudioHdr->numbones(); i++, pbone++, pweight++)
 	{
 		if (panim && panim->bone == i)
 		{
@@ -1139,7 +1141,8 @@ static void CalcAnimation( const CStudioHdr *pStudioHdr,	Vector *pos, Quaternion
 		matrix3x4_t *boneToWorld = g_MatrixPool.Alloc();
 		CBoneBitList boneComputed;
 
-		for (int i = 0; i < animdesc.numlocalhierarchy; i++)
+		int i;
+		for (i = 0; i < animdesc.numlocalhierarchy; i++)
 		{
 			mstudiolocalhierarchy_t *pHierarchy = animdesc.pHierarchy( i );
 
@@ -5607,9 +5610,9 @@ bool Studio_AnimPosition( mstudioanimdesc_t *panim, float flCycle, Vector &vecPo
 			vecAngle.y = vecAngle.y * (1 - f) + pmove->angle * f;
 			if (iLoops != 0)
 			{
-				mstudiomovement_t *pmoveLast = panim->pMovement( panim->nummovements - 1 );
-				vecPos = vecPos + iLoops * pmoveLast->position;
-				vecAngle.y = vecAngle.y + iLoops * pmoveLast->angle;
+				mstudiomovement_t *pmove = panim->pMovement( panim->nummovements - 1 );
+				vecPos = vecPos + iLoops * pmove->position; 
+				vecAngle.y = vecAngle.y + iLoops * pmove->angle; 
 			}
 			return true;
 		}

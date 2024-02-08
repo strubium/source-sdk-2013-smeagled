@@ -293,14 +293,14 @@ bool CAI_BaseActor::StartSceneEvent( CSceneEventInfo *info, CChoreoScene *scene,
 			}	
 			else if (stricmp( event->GetParameters(), "AI_IGNORECOLLISION") == 0)
 			{
-				CBaseEntity *pTarget2 = FindNamedEntity( event->GetParameters2( ) );
+				CBaseEntity *pTarget = FindNamedEntity( event->GetParameters2( ) );
 
-				if (pTarget2)
+				if (pTarget)
 				{
 					info->m_nType = SCENE_AI_IGNORECOLLISION;
-					info->m_hTarget = pTarget2;
+					info->m_hTarget = pTarget;
 					float remaining = event->GetEndTime() - scene->GetTime();
-					NPCPhysics_CreateSolver( this, pTarget2, true, remaining );
+					NPCPhysics_CreateSolver( this, pTarget, true, remaining );
 					info->m_flNext = gpGlobals->curtime + remaining;
 					return true;
 				}

@@ -76,7 +76,7 @@ C_PropVehicleDriveable::C_PropVehicleDriveable() :
 
 	m_ViewSmoothingData.pVehicle = this;
 	m_ViewSmoothingData.bClampEyeAngles = true;
-	m_ViewSmoothingData.bDampenEyePosition = false;
+	m_ViewSmoothingData.bDampenEyePosition = true;
 
 	m_ViewSmoothingData.flPitchCurveZero = PITCH_CURVE_ZERO;
 	m_ViewSmoothingData.flPitchCurveLinear = PITCH_CURVE_LINEAR;

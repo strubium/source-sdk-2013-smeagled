@@ -6238,7 +6238,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 	case 107:
 		{
-			trace_t tr_;
+			trace_t tr;
 
 			edict_t		*pWorld = engine->PEntityOfEntIndex( 0 );
 
@@ -6246,11 +6246,11 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			Vector forward;
 			EyeVectors( &forward );
 			Vector end = start + forward * 1024;
-			UTIL_TraceLine( start, end, MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr_ );
-			if ( tr_.m_pEnt )
-				pWorld = tr_.m_pEnt->edict();
+			UTIL_TraceLine( start, end, MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr );
+			if ( tr.m_pEnt )
+				pWorld = tr.m_pEnt->edict();
 
-			const char *pTextureName = tr_.surface.name;
+			const char *pTextureName = tr.surface.name;
 
 			if ( pTextureName )
 				Msg( "Texture: %s\n", pTextureName );
@@ -6380,10 +6380,14 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		if ( GetTeamNumber() == TEAM_SPECTATOR )
 			return true;
 
-		if ( ( mp_allowspectators.GetBool() == false ) && !IsHLTV() && !IsReplay() )
+		ConVarRef mp_allowspectators( "mp_allowspectators" );
+		if ( mp_allowspectators.IsValid() )
 		{
-			ClientPrint( this, HUD_PRINTCENTER, "#Cannot_Be_Spectator" );
-			return true;
+			if ( ( mp_allowspectators.GetBool() == false ) && !IsHLTV() && !IsReplay() )
+			{
+				ClientPrint( this, HUD_PRINTCENTER, "#Cannot_Be_Spectator" );
+				return true;
+			}
 		}
 
 		if ( !IsDead() )
@@ -6554,10 +6558,10 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 			nRecords = MAX( Q_atoi( args.Arg( 2 ) ), 1 );
 		}
 
-		CBasePlayer *pRecipPlayer = UTIL_PlayerByIndex( nRecip );
-		if ( pRecipPlayer )
+		CBasePlayer *pl = UTIL_PlayerByIndex( nRecip );
+		if ( pl )
 		{
-			pRecipPlayer->DumpPerfToRecipient( this, nRecords );
+			pl->DumpPerfToRecipient( this, nRecords );
 		}
 		return true;
 	}

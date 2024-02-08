@@ -444,8 +444,8 @@ void *CFlexSceneFileManager::FindSceneFile( IHasLocalToGlobalFlexSettings *insta
 	Q_FixSlashes( szFilename );
 
 	// See if it's already loaded
-	
-	for ( int i = 0; i < m_FileList.Count(); i++ )
+	int i;
+	for ( i = 0; i < m_FileList.Count(); i++ )
 	{
 		CFlexSceneFile *file = m_FileList[ i ];
 		if ( file && !Q_stricmp( file->filename, szFilename ) )
@@ -1149,7 +1149,6 @@ void C_BaseFlex::SetupWeights( const matrix3x4_t *pBoneToWorld, int nFlexWeightC
 {
 	// hack in an initialization
 	LinkToGlobalFlexControllers( GetModelPtr() );
-	m_iBlink = AddGlobalFlexController( "blink" );
 
 	if ( SetupGlobalWeights( pBoneToWorld, nFlexWeightCount, pFlexWeights, pFlexDelayedWeights ) )
 	{
