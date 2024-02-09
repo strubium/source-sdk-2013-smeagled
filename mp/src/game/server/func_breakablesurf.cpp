@@ -492,28 +492,24 @@ void CBreakableSurface::TraceAttack( const CTakeDamageInfo &info, const Vector &
 		// ----------------------------------------
 		else
 		{
-            //=============================================================================
-            // HPE_BEGIN:
-            // [pfreese] Window break stat tracking
-            //=============================================================================
+			//=============================================================================
+			// HPE_BEGIN:
+			// [pfreese] Window break stat tracking
+			//=============================================================================
 
-            CBasePlayer* pAttacker = ToBasePlayer(info.GetAttacker());
-            if ( ( pAttacker ) && ( !bWasBroken ) )
-            {
-                gamestats->Event_WindowShattered( pAttacker );
-            }
+			CBasePlayer* pAttacker = ToBasePlayer(info.GetAttacker());
+			if ((pAttacker) && (!bWasBroken))
+			{
+				gamestats->Event_WindowShattered(pAttacker);
+			}
 
-            //=============================================================================
-            // HPE_END
-            //=============================================================================
+			//=============================================================================
+			// HPE_END
+			//=============================================================================
 
-			float flDot = DotProduct(m_vNormal,vecDir);
+			float flDot = DotProduct(m_vNormal, vecDir);
 
-#ifdef CSTRIKE_DLL
 			float damageMultiplier = info.GetDamage();
-#else
-			float damageMultiplier = 1.0f;
-#endif
 
 			Vector vBlastDir;
 			if (flDot > 0)
@@ -526,7 +522,7 @@ void CBreakableSurface::TraceAttack( const CTakeDamageInfo &info, const Vector &
 			}
 
 			// Has the window already been destroyed?
-			if (m_nNumBrokenPanes >= m_nNumWide*m_nNumHigh)
+			if (m_nNumBrokenPanes >= m_nNumWide * m_nNumHigh)
 			{
 				return;
 			}
@@ -534,66 +530,14 @@ void CBreakableSurface::TraceAttack( const CTakeDamageInfo &info, const Vector &
 			// If less than 10% of my panels have been broken, blow me 
 			// up in one large glass shatter
 			// ---------------------------------------------------------------
-			else if ( m_nNumBrokenPanes < 0.1*(m_nNumWide*m_nNumHigh))
+			else if (m_nNumBrokenPanes < 0.1 * (m_nNumWide * m_nNumHigh))
 			{
 				QAngle vAngles;
-				VectorAngles(-1*m_vNormal,vAngles);
+				VectorAngles(-1 * m_vNormal, vAngles);
 
-				CreateShards(m_vCorner, vAngles,vBlastDir, ptr->endpos, 
-							m_nNumWide*m_flPanelWidth, m_nNumHigh*m_flPanelHeight, WINDOW_LARGE_SHARD_SIZE);
+				CreateShards(m_vCorner, vAngles, vBlastDir, ptr->endpos,
+					m_nNumWide * m_flPanelWidth, m_nNumHigh * m_flPanelHeight, WINDOW_LARGE_SHARD_SIZE);
 			}
-			// ---------------------------------------------------------------
-			// Otherwise break in the longest vertical strips possible
-			// (to cut down on the network bandwidth)
-			// ---------------------------------------------------------------
-			else
-			{
-				QAngle vAngles;
-				VectorAngles(-1*m_vNormal,vAngles);
-				Vector vWidthDir,vHeightDir;
-				AngleVectors(vAngles,NULL,&vWidthDir,&vHeightDir);
-
-				for (int width=0;width<m_nNumWide;width++)
-				{
-					int height;
-					int nHCount = 0;
-					for ( height=0;height<m_nNumHigh;height++)
-					{
-						// Keep count of how many panes
-						if (!IsBroken(width,height))
-						{
-							nHCount++;
-						}
-						// Shatter the strip and start counting again
-						else if (nHCount > 0)
-						{
-							Vector vBreakPos = m_vCorner + 
-													(width*vWidthDir*m_flPanelWidth) + 
-													((height-nHCount)*vHeightDir*m_flPanelHeight);
-
-							CreateShards(vBreakPos, vAngles,
-								 vBlastDir,	  ptr->endpos,
-								 m_flPanelWidth, nHCount*m_flPanelHeight,
-								 WINDOW_LARGE_SHARD_SIZE);
-
-							nHCount = 0;
-						}
-					}
-					if (nHCount)
-					{
-						Vector vBreakPos = m_vCorner + 
-												(width*vWidthDir*m_flPanelWidth) + 
-												((height-nHCount)*vHeightDir*m_flPanelHeight);
-
-						CreateShards(vBreakPos, vAngles,
-								 vBlastDir,	  ptr->endpos,
-								 m_flPanelWidth,nHCount*m_flPanelHeight,
-								 WINDOW_LARGE_SHARD_SIZE);
-					}
-				}
-			}
-
-			BreakAllPanes();
 		}
 	}
 }
