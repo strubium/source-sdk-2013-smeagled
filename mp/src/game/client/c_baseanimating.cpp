@@ -2781,7 +2781,7 @@ bool C_BaseAnimating::SetupBones( matrix3x4_t *pBoneToWorldOut, int nMaxBones, i
 		// Prevent spammage!!!
 		if ( gpGlobals->realtime >= lastWarning + 1.0f )
 		{
-			DevMsgRT( "*** ERROR: Bone access not allowed (entity %i:%s)\n", index, GetClassname() );
+			DevMsgRT( "*** ERROR: Bone access not allowed (entity %i:%s)\n", m_index, GetClassname() );
 			lastWarning = gpGlobals->realtime;
 		}
 	}
@@ -3330,7 +3330,7 @@ int C_BaseAnimating::InternalDrawModel( int flags )
 	pInfo->flags = flags;
 	pInfo->pRenderable = this;
 	pInfo->instance = GetModelInstance();
-	pInfo->entity_index = index;
+	pInfo->entity_index = m_index;
 	pInfo->pModel = GetModel();
 	pInfo->origin = GetRenderOrigin();
 	pInfo->angles = GetRenderAngles();
