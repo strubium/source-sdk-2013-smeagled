@@ -3395,9 +3395,9 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 			dl->origin = vAttachment;
 
 			// Original color values
-			int originalR = 252;
-			int originalG = 238;
-			int originalB = 128;
+			int originalR = 231;
+			int originalG = 219;
+			int originalB = 14;
 
 			// Randomize color components within the range of +/- 20
 			dl->color.r = originalR + random->RandomInt(-20, 20);
