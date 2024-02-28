@@ -639,10 +639,12 @@ void NDebugOverlay::Circle( const Vector &position, const Vector &xAxis, const V
 
 		// If we have an alpha value, then draw the fan
 		if ( a && i > 1 )
-		{		
-			debugoverlay->AddTriangleOverlay( vecStart, vecLastPosition, vecPosition, r, g, b, a, bNoDepthTest, flDuration );
-		}
-	}
+		{
+			if ( debugoverlay )
+			{
+				debugoverlay->AddTriangleOverlay( vecStart, vecLastPosition, vecPosition, r, g, b, a, bNoDepthTest, flDuration );
+			}
+		}	
 }
 
 void NDebugOverlay::Sphere( const Vector &position, const QAngle &angles, float radius, int r, int g, int b, int a, bool bNoDepthTest, float flDuration )
