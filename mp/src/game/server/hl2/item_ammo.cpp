@@ -30,7 +30,7 @@ int ITEM_GiveAmmo( CBasePlayer *pPlayer, float flCount, const char *pszAmmoName,
 	flCount *= g_pGameRules->GetAmmoQuantityScale(iAmmoType);
 
 	// Don't give out less than 1 of anything.
-	flCount = MAX( 1.0f, flCount );
+	flCount = max( 1.0f, flCount );
 
 	return pPlayer->GiveAmmo( flCount, iAmmoType, bSuppressSound );
 }
@@ -42,20 +42,34 @@ class CItem_BoxSRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_BoxSRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
-		Precache( );
-		SetModel( "models/items/boxsrounds.mdl" );
+		Precache();
+
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/boxsrounds.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
+
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/boxsrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/boxsrounds.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_PISTOL, "Pistol"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_PISTOL;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "Pistol"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -66,7 +80,23 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_BoxSRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
+
 LINK_ENTITY_TO_CLASS(item_box_srounds, CItem_BoxSRounds);
 LINK_ENTITY_TO_CLASS(item_ammo_pistol, CItem_BoxSRounds);
 
@@ -77,20 +107,33 @@ class CItem_LargeBoxSRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_LargeBoxSRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/boxsrounds.mdl" );
+
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/boxsrounds.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/boxsrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/boxsrounds.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_PISTOL_LARGE, "Pistol"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_PISTOL_LARGE;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "Pistol"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -100,7 +143,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_LargeBoxSRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_large_box_srounds, CItem_LargeBoxSRounds);
 LINK_ENTITY_TO_CLASS(item_ammo_pistol_large, CItem_LargeBoxSRounds);
 
@@ -111,20 +169,32 @@ class CItem_BoxMRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_BoxMRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/boxmrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/boxmrounds.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/boxmrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/boxmrounds.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_SMG1, "SMG1"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_SMG1;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "SMG1"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -134,7 +204,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_BoxMRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_box_mrounds, CItem_BoxMRounds);
 LINK_ENTITY_TO_CLASS(item_ammo_smg1, CItem_BoxMRounds);
 
@@ -145,20 +230,32 @@ class CItem_LargeBoxMRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_LargeBoxMRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/boxmrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/boxmrounds.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/boxmrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/boxmrounds.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_SMG1_LARGE, "SMG1"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_SMG1_LARGE;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "SMG1"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -168,7 +265,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_LargeBoxMRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_large_box_mrounds, CItem_LargeBoxMRounds);
 LINK_ENTITY_TO_CLASS(item_ammo_smg1_large, CItem_LargeBoxMRounds);
 
@@ -179,20 +291,32 @@ class CItem_BoxLRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_BoxLRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/combine_rifle_cartridge01.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/combine_rifle_cartridge01.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/combine_rifle_cartridge01.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/combine_rifle_cartridge01.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_AR2, "AR2"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_AR2;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "AR2"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -202,7 +326,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_BoxLRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_box_lrounds, CItem_BoxLRounds);
 LINK_ENTITY_TO_CLASS(item_ammo_ar2, CItem_BoxLRounds);
 
@@ -213,20 +352,32 @@ class CItem_LargeBoxLRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_LargeBoxLRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/combine_rifle_cartridge01.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/combine_rifle_cartridge01.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/combine_rifle_cartridge01.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/combine_rifle_cartridge01.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_AR2_LARGE, "AR2"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_AR2_LARGE;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "AR2"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -236,7 +387,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_LargeBoxLRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_large_box_lrounds, CItem_LargeBoxLRounds);
 LINK_ENTITY_TO_CLASS(item_ammo_ar2_large, CItem_LargeBoxLRounds);
 
@@ -248,21 +414,33 @@ class CItem_Box357Rounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_Box357Rounds, CItem );
+	DECLARE_DATADESC();
 
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/357ammo.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/357ammo.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/357ammo.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/357ammo.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_357, "357"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_357;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "357"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -272,7 +450,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_Box357Rounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_ammo_357, CItem_Box357Rounds);
 
 
@@ -283,21 +476,33 @@ class CItem_LargeBox357Rounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_LargeBox357Rounds, CItem );
+	DECLARE_DATADESC();
 
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/357ammobox.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/357ammobox.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/357ammobox.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/357ammobox.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_357_LARGE, "357"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_357_LARGE;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "357"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -307,7 +512,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_LargeBox357Rounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_ammo_357_large, CItem_LargeBox357Rounds);
 
 
@@ -318,22 +538,34 @@ class CItem_BoxXBowRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_BoxXBowRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/crossbowrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/crossbowrounds.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/crossbowrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/crossbowrounds.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_CROSSBOW, "XBowBolt" ))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_CROSSBOW;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "XBowBolt" ))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -343,7 +575,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_BoxXBowRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_ammo_crossbow, CItem_BoxXBowRounds);
 
 
@@ -354,20 +601,32 @@ class CItem_FlareRound : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_FlareRound, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/flare.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/flare.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/flare.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/flare.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, 1, "FlareRound"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = 1;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "FlareRound"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -377,7 +636,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_FlareRound )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_flare_round, CItem_FlareRound);
 
 // ========================================================================
@@ -389,20 +663,32 @@ class CItem_BoxFlareRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_BoxFlareRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/boxflares.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/boxflares.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/boxflares.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/boxflares.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_BOX_FLARE_ROUNDS, "FlareRound"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_BOX_FLARE_ROUNDS;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "FlareRound"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -412,7 +698,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_BoxFlareRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_box_flare_rounds, CItem_BoxFlareRounds);
 
 // ========================================================================
@@ -422,20 +723,32 @@ class CItem_RPG_Round : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_RPG_Round, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/weapons/w_missile_closed.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/weapons/w_missile_closed.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/weapons/w_missile_closed.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/weapons/w_missile_closed.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_RPG_ROUND, "RPG_Round"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_RPG_ROUND;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "RPG_Round"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -445,7 +758,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_RPG_Round )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS( item_ml_grenade, CItem_RPG_Round );
 LINK_ENTITY_TO_CLASS( item_rpg_round, CItem_RPG_Round );
 
@@ -456,20 +784,32 @@ class CItem_AR2_Grenade : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_AR2_Grenade, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/ar2_grenade.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/ar2_grenade.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/ar2_grenade.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/ar2_grenade.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_SMG1_GRENADE, "SMG1_Grenade"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_SMG1_GRENADE;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "SMG1_Grenade"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -479,7 +819,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_AR2_Grenade )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_ar2_grenade, CItem_AR2_Grenade);
 LINK_ENTITY_TO_CLASS(item_ammo_smg1_grenade, CItem_AR2_Grenade);
 
@@ -492,20 +847,32 @@ class CItem_BoxSniperRounds : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_BoxSniperRounds, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/boxsniperrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/boxsniperrounds.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/boxsniperrounds.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/boxsniperrounds.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_BOX_SNIPER_ROUNDS, "SniperRound"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_BOX_SNIPER_ROUNDS;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "SniperRound"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -515,7 +882,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_BoxSniperRounds )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_box_sniper_rounds, CItem_BoxSniperRounds);
 
 
@@ -526,20 +908,32 @@ class CItem_BoxBuckshot : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_BoxBuckshot, CItem );
+	DECLARE_DATADESC();
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/boxbuckshot.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/boxbuckshot.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 	void Precache( void )
 	{
-		PrecacheModel ("models/items/boxbuckshot.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/boxbuckshot.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_BUCKSHOT, "Buckshot"))
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_BUCKSHOT;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "Buckshot"))
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -549,7 +943,22 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_BoxBuckshot )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(item_box_buckshot, CItem_BoxBuckshot);
 
 // ========================================================================
@@ -559,23 +968,35 @@ class CItem_AR2AltFireRound : public CItem
 {
 public:
 	DECLARE_CLASS( CItem_AR2AltFireRound, CItem );
+	DECLARE_DATADESC();
 
 	void Precache( void )
 	{
 		PrecacheParticleSystem( "combineball" );
-		PrecacheModel ("models/items/combine_rifle_ammo01.mdl");
+		if( NULL_STRING == m_refmodel )
+			PrecacheModel( "models/items/combine_rifle_ammo01.mdl" );
+		else
+			PrecacheModel( STRING(m_refmodel) );
 	}
 
 	void Spawn( void )
 	{ 
 		Precache( );
-		SetModel( "models/items/combine_rifle_ammo01.mdl");
+		if( NULL_STRING == m_refmodel )
+			SetModel( "models/items/combine_rifle_ammo01.mdl" );
+		else
+			SetModel( STRING(m_refmodel) );
 		BaseClass::Spawn( );
 	}
 
 	bool MyTouch( CBasePlayer *pPlayer )
 	{
-		if (ITEM_GiveAmmo( pPlayer, SIZE_AMMO_AR2_ALTFIRE, "AR2AltFire" ) )
+		if ( m_Aamount > 0 )
+			FinalPickedAmmo = m_Aamount;
+		else
+			FinalPickedAmmo = SIZE_AMMO_AR2_ALTFIRE;
+
+		if (ITEM_GiveAmmo( pPlayer, FinalPickedAmmo, "AR2AltFire" ) )
 		{
 			if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_NO )
 			{
@@ -585,7 +1006,21 @@ public:
 		}
 		return false;
 	}
+private:
+	int m_Aamount;
+	int FinalPickedAmmo;
+	int m_modelskin;
+
+	string_t m_refmodel;
 };
+
+BEGIN_DATADESC( CItem_AR2AltFireRound )
+
+	DEFINE_KEYFIELD( m_Aamount, FIELD_INTEGER, "Aamount" ),
+	DEFINE_KEYFIELD( m_refmodel, FIELD_STRING, "refmodel" ),
+	DEFINE_KEYFIELD( m_modelskin, FIELD_INTEGER, "skin" ),
+
+END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( item_ammo_ar2_altfire, CItem_AR2AltFireRound );
 
@@ -981,4 +1416,3 @@ void CItem_AmmoCrate::InputKill( inputdata_t &data )
 {
 	UTIL_Remove( this );
 }
-
